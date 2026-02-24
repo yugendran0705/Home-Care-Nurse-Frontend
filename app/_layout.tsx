@@ -12,8 +12,8 @@ import { useEffect } from "react";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
-import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
-import '@/global.css';
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import "@/global.css";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -22,6 +22,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Sen: require("../assets/fonts/Sen-Regular.ttf"),
+    Sen_Bold: require("../assets/fonts/Sen-Bold.ttf"),
   });
 
   useEffect(() => {
@@ -35,18 +37,16 @@ export default function RootLayout() {
   }
 
   return (
-    
     <GluestackUIProvider mode="dark">
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-        <Stack.Screen name="sign-up" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+        <Stack>
+          <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+          <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
     </GluestackUIProvider>
-  
   );
 }

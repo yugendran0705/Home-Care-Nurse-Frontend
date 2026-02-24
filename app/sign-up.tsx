@@ -1,34 +1,46 @@
-import { Feather } from '@expo/vector-icons';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import axios from 'axios';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Location from 'expo-location';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { Box } from "@/components/ui/box/index";
+import { Button, ButtonIcon, ButtonText } from "@/components/ui/button/index";
+import {
+  FormControl,
+  FormControlLabel,
+  FormControlLabelText,
+} from "@/components/ui/form-control/index";
+import { EyeIcon, EyeOffIcon } from "@/components/ui/icon/index";
+import {
+  Input,
+  InputField,
+  InputIcon,
+  InputSlot,
+} from "@/components/ui/input/index";
+import { Pressable } from "@/components/ui/pressable/index";
+import { Text } from "@/components/ui/text/index";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import axios from "axios";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Location from "expo-location";
+import { router } from "expo-router";
+import { ArrowLeft, ArrowRight, Mars, Venus } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
-  SafeAreaView,
   ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import Animated, {
   FadeInRight,
   FadeOutLeft,
   useAnimatedStyle,
   useSharedValue,
-  withSpring
-} from 'react-native-reanimated';
-import data from '../config.js';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+  withSpring,
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
+import data from "../config.js";
 
 interface Address {
   address_line_1: string;
@@ -55,35 +67,52 @@ interface FormData {
   address: Address;
 }
 const initialFormData: FormData = {
-  email: '',
-  password: '',
-  first_name: '',
-  last_name: '',
-  phone_number: '',
-  date_of_birth: '',
-  gender: '',
-  license_number: '',
-  years_of_experience: '',
-  bio: '',
-  profile_picture_url: '',
+  email: "",
+  password: "",
+  first_name: "",
+  last_name: "",
+  phone_number: "",
+  date_of_birth: "",
+  gender: "",
+  license_number: "",
+  years_of_experience: "",
+  bio: "",
+  profile_picture_url: "",
   address: {
-    address_line_1: '',
-    address_line_2: '',
-    city: '',
-    state: '',
-    pincode: '',
-    country: 'India',
+    address_line_1: "",
+    address_line_2: "",
+    city: "",
+    state: "",
+    pincode: "",
+    country: "India",
     latitude: 19.076,
     longitude: 72.8777,
   },
 };
 
 export default function SignUpScreen() {
+  const actionButtonShadow = {
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+  };
+
+  const normalizeErrorMessage = (value: unknown, fallback: string) => {
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) return value.join("\n");
+    if (value && typeof value === "object") return JSON.stringify(value);
+    return fallback;
+  };
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [hasInitializedLocation, setHasInitializedLocation] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -102,86 +131,155 @@ export default function SignUpScreen() {
 
   // --- LOCATION FETCH ---
   useEffect(() => {
+    if (step === 0) {
+      router.back();
+    }
+
+    if (step !== 3 || hasInitializedLocation) return;
+
     const getLocation = async () => {
       setLoading(true);
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setError('Permission to access location was denied');
+      if (status !== "granted") {
+        setError("Permission to access location was denied");
         setLoading(false);
+        setHasInitializedLocation(true);
         return;
       }
       try {
         let currentLocation = await Location.getCurrentPositionAsync({});
-        handleAddressChange('latitude', currentLocation.coords.latitude);
-        handleAddressChange('longitude', currentLocation.coords.longitude);
+        handleAddressChange("latitude", currentLocation.coords.latitude);
+        handleAddressChange("longitude", currentLocation.coords.longitude);
       } catch {
-        setError('Could not fetch location. Please select it on the map.');
+        setError("Could not fetch location. Please select it on the map.");
       } finally {
+        setHasInitializedLocation(true);
         setLoading(false);
       }
     };
-    if (step === 3) getLocation();
-  }, [step]);
+    getLocation();
+  }, [step, hasInitializedLocation]);
 
-  const handleFormChange = (field: keyof Omit<FormData, 'address'>, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleFormChange = (
+    field: keyof Omit<FormData, "address">,
+    value: string,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
-  const handleAddressChange = (field: keyof Address, value: string | number) => {
-    setFormData(prev => ({ ...prev, address: { ...prev.address, [field]: value } }));
+  const handleAddressChange = (
+    field: keyof Address,
+    value: string | number,
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      address: { ...prev.address, [field]: value },
+    }));
   };
 
   const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
+    setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setDate(selectedDate);
       let fDate = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1)
         .toString()
-        .padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
-      handleFormChange('date_of_birth', fDate);
+        .padStart(
+          2,
+          "0",
+        )}-${selectedDate.getDate().toString().padStart(2, "0")}`;
+      handleFormChange("date_of_birth", fDate);
     }
   };
 
+  const validateEmail = (email: string) => {
+    // Simple regex for email validation
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    // At least 8 chars, at least one letter, one number, and one special character
+    return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
+  };
+
   const handleNextStep = () => {
-    if (step === 1 && (!formData.email || !formData.password || !formData.first_name || !formData.last_name)) {
-      setError('Please fill all required fields in Step 1.');
+    if (step === 1) {
+      if (
+        !formData.email ||
+        !formData.password ||
+        !formData.first_name ||
+        !formData.last_name ||
+        !formData.date_of_birth ||
+        !formData.phone_number ||
+        !formData.gender
+      ) {
+        setError("Please fill all required fields in Step 1.");
+        return;
+      }
+      if (!validateEmail(formData.email)) {
+        setError("Please enter a valid email address.");
+        return;
+      }
+      if (!validatePassword(formData.password)) {
+        setError(
+          "Password must be at least 8 characters, include at least one letter, one number, and one special character.",
+        );
+        return;
+      }
+    }
+    if (
+      step === 2 &&
+      (!formData.license_number ||
+        !formData.years_of_experience ||
+        !formData.profile_picture_url)
+    ) {
+      setError(
+        "Please provide your license number, years of experience, and a profile picture URL.",
+      );
       return;
     }
-    if (step === 2 && (!formData.license_number || !formData.years_of_experience || !formData.profile_picture_url)) {
-      setError('Please provide your license number, years of experience, and a profile picture URL.');
-      return;
+    setError("");
+    setStep((s) => s + 1);
+  };
+
+  const handlePrevStep = () => {
+    if (step !== 0) {
+      setStep((s) => s - 1);
     }
-    setError('');
-    setStep(s => s + 1);
+    setError("");
+    return;
   };
 
   const handleConfirmLocationAndGeocode = async () => {
     if (isGeocoding) return;
     setIsGeocoding(true);
-    setError('');
+    setError("");
     try {
       const { latitude, longitude } = formData.address;
-      const geocodedAddresses = await Location.reverseGeocodeAsync({ latitude, longitude });
+      const geocodedAddresses = await Location.reverseGeocodeAsync({
+        latitude,
+        longitude,
+      });
 
       if (geocodedAddresses && geocodedAddresses.length > 0) {
         const addr = geocodedAddresses[0];
         // Use a single state update for better performance
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           address: {
             ...prev.address,
-            address_line_1: `${addr.streetNumber || ''} ${addr.street || ''}`.trim(),
-            city: addr.city || '',
-            state: addr.region || '',
-            pincode: addr.postalCode || '',
+            address_line_1:
+              `${addr.streetNumber || ""} ${addr.street || ""}`.trim(),
+            city: addr.city || "",
+            state: addr.region || "",
+            pincode: addr.postalCode || "",
             country: addr.country || prev.address.country,
           },
         }));
       } else {
-        setError('Could not determine address. Please enter it manually.');
+        setError("Could not determine address. Please enter it manually.");
       }
     } catch (error) {
-      console.error('Geocoding Error:', error);
-      setError('Failed to fetch address details. Please enter them manually.');
+      console.error("Geocoding Error:", error);
+      setError("Failed to fetch address details. Please enter them manually.");
     } finally {
       setIsGeocoding(false);
       setStep(4); // Move to the next step regardless of success
@@ -190,23 +288,31 @@ export default function SignUpScreen() {
 
   const handleSignUp = async () => {
     if (loading) return;
-    setError('');
+    setError("");
     setLoading(true);
     try {
       const payload = {
         ...formData,
         years_of_experience: parseInt(formData.years_of_experience, 10) || 0,
       };
-      
-      const response = await axios.post(`${data.apiUrl}/nurses/register`, payload);
+
+      const response = await axios.post(
+        `${data.apiUrl}/nurses/register`,
+        payload,
+      );
       const { access_token, refresh_token } = response.data;
-      await AsyncStorage.setItem('access_token', access_token);
-      await AsyncStorage.setItem('refresh_token', refresh_token);
-      Alert.alert('Success!', 'Your nurse profile has been created. Please sign in.', [
-        { text: 'OK', onPress: () => router.push('/(tabs)') },
+      await AsyncStorage.setItem("access_token", access_token);
+      await AsyncStorage.setItem("refresh_token", refresh_token);
+      Alert.alert("Success!", "Your nurse profile has been created.", [
+        { text: "OK", onPress: () => router.push("/(tabs)") },
       ]);
     } catch (e: any) {
-      const errorMessage = e.response?.data?.detail || 'Registration failed. Please try again.';
+      const apiMessage =
+        e?.response?.data?.detail ?? e?.response?.data?.message;
+      const errorMessage = normalizeErrorMessage(
+        apiMessage,
+        "Registration failed. Please try again.",
+      );
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -216,246 +322,725 @@ export default function SignUpScreen() {
   // --- RENDER STEPS WITH FADE/SLIDE ANIMATIONS ---
   const renderStepOne = () => (
     <Animated.View entering={FadeInRight} exiting={FadeOutLeft}>
-      <Text style={styles.stepTitle}>Step 1: Personal Details</Text>
-      <TextInput style={styles.input} placeholder="First Name" placeholderTextColor="#a0aec0" value={formData.first_name} onChangeText={v => handleFormChange('first_name', v)} />
-      <TextInput style={styles.input} placeholder="Last Name" placeholderTextColor="#a0aec0" value={formData.last_name} onChangeText={v => handleFormChange('last_name', v)} />
-      <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#a0aec0" value={formData.email} onChangeText={v => handleFormChange('email', v)} autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#a0aec0" secureTextEntry value={formData.password} onChangeText={v => handleFormChange('password', v)} />
-      <TextInput style={styles.input} placeholder="Phone" placeholderTextColor="#a0aec0" value={formData.phone_number} onChangeText={v => handleFormChange('phone_number', v)} keyboardType="phone-pad" />
+      <Text
+        style={{ fontFamily: "Sen_Bold" }}
+        className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
+      >
+        Step 1: Personal Details
+      </Text>
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            First Name
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: Dhruva"
+            placeholderTextColor="#000000a1"
+            value={formData.first_name}
+            onChangeText={(text) => handleFormChange("first_name", text)}
+            cursorColor="black"
+            type="text"
+          />
+        </Input>
+      </FormControl>
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Last Name
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: U R"
+            placeholderTextColor="#000000a1"
+            value={formData.last_name}
+            onChangeText={(text) => handleFormChange("last_name", text)}
+            cursorColor="black"
+            type="text"
+          />
+        </Input>
+      </FormControl>
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Email
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: example@gmail.com"
+            placeholderTextColor="#000000a1"
+            value={formData.email}
+            onChangeText={(text) => handleFormChange("email", text)}
+            autoCapitalize="none"
+            cursorColor="black"
+            type="text"
+          />
+        </Input>
+      </FormControl>
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Password
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 pr-4 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            type={isPasswordVisible ? "text" : "password"}
+            placeholder="eg: ********"
+            placeholderTextColor="#000000a1"
+            value={formData.password}
+            onChangeText={(text) => handleFormChange("password", text)}
+            cursorColor="black"
+          />
+          <InputSlot onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
+            <InputIcon as={isPasswordVisible ? EyeIcon : EyeOffIcon} />
+          </InputSlot>
+        </Input>
+      </FormControl>
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Phone
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: 9876543210"
+            placeholderTextColor="#000000a1"
+            value={formData.phone_number}
+            onChangeText={(text) => handleFormChange("phone_number", text)}
+            keyboardType="phone-pad"
+            cursorColor="black"
+            type="text"
+          />
+        </Input>
+      </FormControl>
 
       <Pressable onPress={() => setShowDatePicker(true)}>
-        <View style={styles.input}>
-          <Text style={formData.date_of_birth ? styles.dateText : styles.placeholderText}>
-            {formData.date_of_birth || 'Date of Birth'}
-          </Text>
-        </View>
-      </Pressable>
-      {showDatePicker && <DateTimePicker value={date} mode="date" display="default" onChange={onChangeDate} />}
-
-      <View style={styles.genderContainer}>
-        {['Male', 'Female'].map(g => (
-          <Pressable
-            key={g}
-            style={[styles.genderButton, formData.gender === g && styles.genderButtonSelected]}
-            onPress={() => handleFormChange('gender', g)}
+        <Text
+          style={{ fontFamily: "Sen" }}
+          className="text-white text-md uppercase font-Sen mb-2"
+        >
+          Date of birth
+        </Text>
+        <Box
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="h-16 bg-[#F0F5FA] rounded-[14px] px-[15px] mb-[15px] mt-1 justify-center"
+        >
+          <Text
+            style={{ fontFamily: "Sen" }}
+            className={
+              formData.date_of_birth
+                ? "text-[14px] text-black"
+                : "text-[14px] text-[#000000]/60"
+            }
           >
-            <Feather name="user" size={20} color={formData.gender === g ? '#192f6a' : '#fff'} style={styles.genderIcon} />
-            <Text style={[styles.genderButtonText, formData.gender === g && styles.genderButtonTextSelected]}>{g}</Text>
-          </Pressable>
-        ))}
-      </View>
+            {formData.date_of_birth || "2000-00-00"}
+          </Text>
+        </Box>
+      </Pressable>
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display="default"
+          onChange={onChangeDate}
+        />
+      )}
+      <Text
+        style={{ fontFamily: "Sen" }}
+        className="text-white text-md uppercase font-Sen mb-2"
+      >
+        Gender
+      </Text>
+      <Box className="flex-row justify-between gap-4 mb-[15px]">
+        {["Male", "Female"].map((g) => {
+          const isActive = formData.gender === g;
+
+          return (
+            <Box
+              key={g}
+              className={`flex-1 rounded-[16px] p-[3px] ${isActive ? "bg-black/10" : "bg-[#F0F5FA]"}`}
+            >
+              <Button
+                onPress={() => handleFormChange("gender", g)}
+                className={`h-[50px] rounded-[14px] flex-row items-center justify-center ${
+                  isActive ? "bg-white/50" : "bg-[#F0F5FA]"
+                }`}
+                variant="solid"
+              >
+                <ButtonIcon
+                  as={g === "Male" ? Mars : Venus}
+                  className={`mr-[8px] ${
+                    isActive ? "text-black" : "text-black/70"
+                  }`}
+                />
+
+                <ButtonText
+                  style={{ fontFamily: "Sen" }}
+                  className={`text-[16px] font-medium ${
+                    isActive ? "text-black" : "text-black/70"
+                  }`}
+                >
+                  {g}
+                </ButtonText>
+              </Button>
+            </Box>
+          );
+        })}
+      </Box>
     </Animated.View>
   );
 
   const renderStepTwo = () => (
     <Animated.View entering={FadeInRight} exiting={FadeOutLeft}>
-      <Text style={styles.stepTitle}>Step 2: Professional Details</Text>
-      <TextInput style={styles.input} placeholder="License Number" placeholderTextColor="#a0aec0" value={formData.license_number} onChangeText={v => handleFormChange('license_number', v)} />
-      <TextInput style={styles.input} placeholder="Years of Experience" placeholderTextColor="#a0aec0" value={formData.years_of_experience} onChangeText={v => handleFormChange('years_of_experience', v)} keyboardType="number-pad" />
-      <TextInput style={styles.input} placeholder="Profile Picture URL" placeholderTextColor="#a0aec0" value={formData.profile_picture_url} onChangeText={v => handleFormChange('profile_picture_url', v)} keyboardType="url" autoCapitalize="none" />
-      <TextInput
-        style={[styles.input, { height: 100, textAlignVertical: 'top', paddingTop: 15 }]}
-        placeholder="Short Bio (Optional)" placeholderTextColor="#a0aec0" value={formData.bio} onChangeText={v => handleFormChange('bio', v)} multiline
-      />
+      <Text
+        style={{ fontFamily: "Sen_Bold" }}
+        className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
+      >
+        Step 2: Professional Details
+      </Text>
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            License Number
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: RN-2026-001"
+            placeholderTextColor="#000000a1"
+            value={formData.license_number}
+            onChangeText={(text) => handleFormChange("license_number", text)}
+            cursorColor="black"
+          />
+        </Input>
+      </FormControl>
+
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Years of Experience
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: 5"
+            placeholderTextColor="#000000a1"
+            value={formData.years_of_experience}
+            onChangeText={(text) =>
+              handleFormChange("years_of_experience", text)
+            }
+            keyboardType="number-pad"
+            cursorColor="black"
+          />
+        </Input>
+      </FormControl>
+
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Profile Picture URL
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: https://..."
+            placeholderTextColor="#000000a1"
+            value={formData.profile_picture_url}
+            onChangeText={(text) =>
+              handleFormChange("profile_picture_url", text)
+            }
+            autoCapitalize="none"
+            cursorColor="black"
+          />
+        </Input>
+      </FormControl>
+
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Short Bio
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-24 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen", textAlignVertical: "top" }}
+            className="text-black mt-4"
+            placeholder="Write a short bio (optional)"
+            placeholderTextColor="#000000a1"
+            value={formData.bio}
+            onChangeText={(text) => handleFormChange("bio", text)}
+            multiline
+            cursorColor="black"
+          />
+        </Input>
+      </FormControl>
     </Animated.View>
   );
 
   const renderStepThree = () => (
-    <Animated.View entering={FadeInRight} exiting={FadeOutLeft} style={styles.mapStepContainer}>
-      <Text style={styles.stepTitle}>Step 2: Pin Your Location</Text>
-      <View style={styles.mapWrapper}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#fff" />
-        ) : (
-          <MapView
-            style={styles.map}
-            region={{
+    <Animated.View
+      entering={FadeInRight}
+      exiting={FadeOutLeft}
+      className="flex-1 min-h-[500px]"
+    >
+      <Text
+        style={{ fontFamily: "Sen_Bold" }}
+        className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
+      >
+        Step 3: Pin Your Location
+      </Text>
+      <Box
+        style={{
+          elevation: 5,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.35,
+          shadowRadius: 4,
+        }}
+        className="flex-1 rounded-[14px] overflow-hidden bg-[#F0F5FA] justify-center items-center mb-5"
+      >
+        <MapView
+          style={{ width: "100%", height: "100%" }}
+          region={{
+            latitude: formData.address.latitude,
+            longitude: formData.address.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}
+        >
+          <Marker
+            draggable
+            coordinate={{
               latitude: formData.address.latitude,
               longitude: formData.address.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
             }}
-          >
-            <Marker
-              draggable
-              coordinate={{ latitude: formData.address.latitude, longitude: formData.address.longitude }}
-              onDragEnd={e => {
-                handleAddressChange('latitude', e.nativeEvent.coordinate.latitude);
-                handleAddressChange('longitude', e.nativeEvent.coordinate.longitude);
-              }}
-            />
-          </MapView>
+            onDragEnd={(e) => {
+              handleAddressChange(
+                "latitude",
+                e.nativeEvent.coordinate.latitude,
+              );
+              handleAddressChange(
+                "longitude",
+                e.nativeEvent.coordinate.longitude,
+              );
+            }}
+          />
+        </MapView>
+        {loading && (
+          <Box className="absolute inset-0 items-center justify-center bg-black/10">
+            <ActivityIndicator size="large" color="#000" />
+          </Box>
         )}
-      </View>
-      <Pressable style={styles.confirmButton} onPress={handleConfirmLocationAndGeocode} disabled={isGeocoding}>
+      </Box>
+      <Button
+        style={{
+          elevation: 5,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.35,
+          shadowRadius: 4,
+        }}
+        className="bg-[#F0F5FA] h-[55px] rounded-[14px] items-center justify-center mt-[10px]"
+        onPress={handleConfirmLocationAndGeocode}
+        isDisabled={loading}
+      >
         {isGeocoding ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color="#192f6a" />
         ) : (
-          <Text style={styles.confirmButtonText}>Confirm Location</Text>
+          <Text
+            style={{ fontFamily: "Sen_Bold" }}
+            className="text-black text-[18px]"
+          >
+            Confirm Location
+          </Text>
         )}
-      </Pressable>
+      </Button>
     </Animated.View>
   );
 
   const renderStepFour = () => (
     <Animated.View entering={FadeInRight} exiting={FadeOutLeft}>
-      <Text style={styles.stepTitle}>Step 3: Confirm Address</Text>
-      <TextInput style={styles.input} placeholder="Address Line 1" placeholderTextColor="#a0aec0" value={formData.address.address_line_1} onChangeText={v => handleAddressChange('address_line_1', v)} />
-      <TextInput style={styles.input} placeholder="City" placeholderTextColor="#a0aec0" value={formData.address.city} onChangeText={v => handleAddressChange('city', v)} />
-      <TextInput style={styles.input} placeholder="State" placeholderTextColor="#a0aec0" value={formData.address.state} onChangeText={v => handleAddressChange('state', v)} />
-      <TextInput style={styles.input} placeholder="Pincode" placeholderTextColor="#a0aec0" value={formData.address.pincode} onChangeText={v => handleAddressChange('pincode', v)} keyboardType="number-pad" />
+      <Text
+        style={{ fontFamily: "Sen_Bold" }}
+        className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
+      >
+        Step 4: Confirm Address
+      </Text>
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Address Line 1
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: 221B Baker Street"
+            placeholderTextColor="#000000a1"
+            value={formData.address.address_line_1}
+            onChangeText={(text) => handleAddressChange("address_line_1", text)}
+            cursorColor="black"
+          />
+        </Input>
+      </FormControl>
+
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            City
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: Mumbai"
+            placeholderTextColor="#000000a1"
+            value={formData.address.city}
+            onChangeText={(text) => handleAddressChange("city", text)}
+            cursorColor="black"
+          />
+        </Input>
+      </FormControl>
+
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            State
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: Maharashtra"
+            placeholderTextColor="#000000a1"
+            value={formData.address.state}
+            onChangeText={(text) => handleAddressChange("state", text)}
+            cursorColor="black"
+          />
+        </Input>
+      </FormControl>
+
+      <FormControl size="lg" className="w-full mb-2">
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Pincode
+          </FormControlLabelText>
+        </FormControlLabel>
+        <Input
+          style={{
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.35,
+            shadowRadius: 4,
+          }}
+          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          size="md"
+        >
+          <InputField
+            style={{ fontFamily: "Sen" }}
+            className="text-black"
+            placeholder="eg: 400001"
+            placeholderTextColor="#000000a1"
+            value={formData.address.pincode}
+            onChangeText={(text) => handleAddressChange("pincode", text)}
+            keyboardType="number-pad"
+            cursorColor="black"
+          />
+        </Input>
+      </FormControl>
     </Animated.View>
   );
 
   return (
-    <LinearGradient
-  colors={['#1a1a1a', '#000000']}
-      style={styles.gradientBackground}
-    >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-            <Text style={styles.title}>Create Account</Text>
+    <LinearGradient colors={["#1a1a1a", "#000000"]} className="flex-1">
+      <SafeAreaView className="flex-1 bg-[#369BFF]/80">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1"
+        >
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingHorizontal: 24,
+              paddingBottom: 40,
+              justifyContent: "center",
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text
+              style={{ fontFamily: "Sen_Bold" }}
+              className="text-[28px] text-[#F7FAFC] text-center mb-[30px]"
+            >
+              Create Account
+            </Text>
 
             {step === 1 && renderStepOne()}
             {step === 2 && renderStepTwo()}
             {step === 3 && renderStepThree()}
             {step === 4 && renderStepFour()}
 
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {error ? (
+              <Box className="bg-white/70 rounded-2xl border border-white/20">
+                <Text
+                  style={{ fontFamily: "Sen" }}
+                  className="text-red-500 text-center my-[10px] text-[14px]"
+                >
+                  {error}
+                </Text>
+              </Box>
+            ) : null}
 
-            <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
-              {step < 4 ? (
-                <Pressable
-                  style={styles.actionButton}
-                  onPress={handleNextStep}
+            <Animated.View className="mt-5" style={buttonAnimatedStyle}>
+              <Box className="flex-row justify-center gap-10">
+                <Button
+                  className="bg-[#F0F5FA] py-[18px] h-[55px] w-[120px] rounded-[14px] items-center"
+                  style={actionButtonShadow}
+                  onPress={handlePrevStep}
                   onPressIn={handleButtonPressIn}
                   onPressOut={handleButtonPressOut}
                 >
-                  <Text style={styles.actionButtonText}>Next</Text>
-                </Pressable>
-              ) : (
-                <Pressable
-                  style={styles.actionButton}
-                  onPress={handleSignUp}
-                  disabled={loading}
-                  onPressIn={handleButtonPressIn}
-                  onPressOut={handleButtonPressOut}
-                >
-                  {loading ? <ActivityIndicator color="#192f6a" /> : <Text style={styles.actionButtonText}>Sign Up</Text>}
-                </Pressable>
-              )}
+                  <ButtonIcon as={ArrowLeft} />
+                  <ButtonText
+                    style={{ fontFamily: "Sen_Bold" }}
+                    className="text-black text-[18px]"
+                  >
+                    Prev
+                  </ButtonText>
+                </Button>
+                {step !== 3 &&
+                  (step < 4 ? (
+                    <Button
+                      className={`bg-[#F0F5FA] py-[18px] h-[55px] rounded-[14px] items-center ${"w-[120px]"}`}
+                      style={actionButtonShadow}
+                      isDisabled={loading}
+                      onPress={handleNextStep}
+                      onPressIn={handleButtonPressIn}
+                      onPressOut={handleButtonPressOut}
+                    >
+                      <ButtonText
+                        style={{ fontFamily: "Sen_Bold" }}
+                        className="text-black text-[18px]"
+                      >
+                        Next
+                      </ButtonText>
+                      <ButtonIcon as={ArrowRight} />
+                    </Button>
+                  ) : (
+                    <Button
+                      className="bg-[#F0F5FA] py-[18px] h-[55px] w-[120px] rounded-[14px] items-center"
+                      style={actionButtonShadow}
+                      isDisabled={loading}
+                      onPress={handleSignUp}
+                      onPressIn={handleButtonPressIn}
+                      onPressOut={handleButtonPressOut}
+                    >
+                      {loading ? (
+                        <ActivityIndicator color="#192f6a" />
+                      ) : (
+                        <ButtonText
+                          style={{ fontFamily: "Sen_Bold" }}
+                          className="text-black text-[18px]"
+                        >
+                          Sign Up
+                        </ButtonText>
+                      )}
+                    </Button>
+                  ))}
+              </Box>
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );
-};
-
-const styles = StyleSheet.create({
-  gradientBackground: { flex: 1 },
-
-  safeArea: { 
-    flex: 1, 
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 
-  },
-
-  scrollContainer: { 
-    flexGrow: 1, 
-    paddingHorizontal: 24, 
-    paddingBottom: 40, 
-    justifyContent: 'center' 
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#F7FAFC', // brighter white for black bg
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-
-  stepTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#E2E8F0', // light grayish white
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-
-  input: {
-    height: 55,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // more subtle on black
-    borderRadius: 14,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginBottom: 15,
-    justifyContent: 'center',
-  },
-
-  placeholderText: { fontSize: 16, color: '#A0AEC0' }, 
-  dateText: { fontSize: 16, color: '#E2E8F0' },
-
-  errorText: {
-    color: '#FC8181', // brighter red on black
-    textAlign: 'center',
-    marginVertical: 10,
-    fontSize: 14,
-  },
-
-  buttonContainer: { marginTop: 20 },
-
-  actionButton: {
-    backgroundColor: '#4c8bf5',
-    paddingVertical: 18,
-    borderRadius: 14,
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 4,
-  },
-  actionButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' },
-
-  genderContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
-
-  genderButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 55,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 14,
-    marginHorizontal: 5,
-  },
-  genderButtonSelected: { backgroundColor: '#4c8bf5' }, // deeper purple
-  genderIcon: { marginRight: 10 },
-  genderButtonText: { fontSize: 16, color: '#E2E8F0', fontWeight: '500' },
-  genderButtonTextSelected: { color: '#FFFFFF' },
-
-  mapStepContainer: { flex: 1, minHeight: 500 },
-
-  mapWrapper: {
-    flex: 1,
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  map: { ...StyleSheet.absoluteFillObject },
-
-  confirmButton: {
-    backgroundColor: '#4FD1C5',
-    paddingVertical: 15,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  confirmButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' },
-});
+}

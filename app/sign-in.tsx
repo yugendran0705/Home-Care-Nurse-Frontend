@@ -176,7 +176,10 @@ export default function SignInScreen() {
                   />
                 </Box>
                 <Box>
-                  <Text className="text-[18px] text-white/70 mt-[20px] mb-[20px] w-full text-center">
+                  <Text
+                    style={{ fontFamily: "Sen" }}
+                    className="text-[18px] text-white/70 font-Sen mt-[20px] mb-[20px] w-full text-center"
+                  >
                     Sign in to manage your bookings
                   </Text>
                 </Box>
@@ -191,7 +194,10 @@ export default function SignInScreen() {
                 >
                   <FormControl size="lg" className="w-full text-red-500">
                     <FormControlLabel>
-                      <FormControlLabelText className="text-gray-800 uppercase leading-10">
+                      <FormControlLabelText
+                        style={{ fontFamily: "Sen" }}
+                        className="text-gray-800 uppercase leading-10 font-Sen"
+                      >
                         email
                       </FormControlLabelText>
                     </FormControlLabel>
@@ -203,6 +209,7 @@ export default function SignInScreen() {
                         <InputIcon as={MailIcon} />
                       </InputSlot>
                       <InputField
+                        style={{ fontFamily: "Sen" }}
                         className="text-black"
                         placeholder="example@gmail.com"
                         value={credentials.email}
@@ -213,7 +220,10 @@ export default function SignInScreen() {
                   </FormControl>
                   <FormControl size="lg" className="w-full" isRequired={false}>
                     <FormControlLabel>
-                      <FormControlLabelText className="text-gray-800 uppercase leading-10">
+                      <FormControlLabelText
+                        style={{ fontFamily: "Sen" }}
+                        className="text-gray-800 uppercase leading-10 font-Sen"
+                      >
                         PASSWORD
                       </FormControlLabelText>
                     </FormControlLabel>
@@ -225,6 +235,7 @@ export default function SignInScreen() {
                         <InputIcon as={LockIcon} />
                       </InputSlot>
                       <InputField
+                        style={{ fontFamily: "Sen" }}
                         className="text-black"
                         type={isPasswordVisible ? "text" : "password"}
                         placeholder="********"
@@ -241,9 +252,21 @@ export default function SignInScreen() {
                       </InputSlot>
                     </Input>
                   </FormControl>
-                  {!!error && <Text className="text-red-500">{error}</Text>}
+                  {!!error && (
+                    <Text
+                      style={{ fontFamily: "Sen" }}
+                      className="text-red-500 font-Sen"
+                    >
+                      {error}
+                    </Text>
+                  )}
                   <Link href="https://gluestack.io/" className="ml-auto">
-                    <Text className="text-[#369BFF]">Forgot Password?</Text>
+                    <Text
+                      style={{ fontFamily: "Sen" }}
+                      className="text-[#369BFF]"
+                    >
+                      Forgot Password?
+                    </Text>
                   </Link>
 
                   <Button
@@ -254,17 +277,26 @@ export default function SignInScreen() {
                     isDisabled={isLoading}
                   >
                     {isLoading && <ButtonSpinner />}
-                    <ButtonText className="text-white font-bold">
+                    <ButtonText
+                      style={{ fontFamily: "Sen_Bold" }}
+                      className="text-white"
+                    >
                       SIGN IN
                     </ButtonText>
                   </Button>
                   <Animated.View style={footerAnimatedStyle}>
                     <Box className="flex-row mt-4">
-                      <Text className="text-[#646982]">
+                      <Text
+                        style={{ fontFamily: "Sen" }}
+                        className="text-[#646982]"
+                      >
                         Don&apos;t have an account?
                       </Text>
                       <Link href="./sign-up" asChild className="ml-2">
-                        <Text className="text-[#369BFF] font-bold">
+                        <Text
+                          style={{ fontFamily: "Sen_Bold" }}
+                          className="text-[#369BFF]"
+                        >
                           SIGN UP
                         </Text>
                       </Link>
