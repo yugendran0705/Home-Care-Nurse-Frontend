@@ -33,6 +33,7 @@ import {
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import Animated, {
+  Easing,
   FadeInRight,
   FadeOutLeft,
   useAnimatedStyle,
@@ -321,7 +322,7 @@ export default function SignUpScreen() {
 
   // --- RENDER STEPS WITH FADE/SLIDE ANIMATIONS ---
   const renderStepOne = () => (
-    <Animated.View entering={FadeInRight} exiting={FadeOutLeft}>
+    <>
       <Text
         style={{ fontFamily: "Sen_Bold" }}
         className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
@@ -573,11 +574,11 @@ export default function SignUpScreen() {
           );
         })}
       </Box>
-    </Animated.View>
+    </>
   );
 
   const renderStepTwo = () => (
-    <Animated.View entering={FadeInRight} exiting={FadeOutLeft}>
+    <>
       <Text
         style={{ fontFamily: "Sen_Bold" }}
         className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
@@ -718,15 +719,11 @@ export default function SignUpScreen() {
           />
         </Input>
       </FormControl>
-    </Animated.View>
+    </>
   );
 
   const renderStepThree = () => (
-    <Animated.View
-      entering={FadeInRight}
-      exiting={FadeOutLeft}
-      className="flex-1 min-h-[500px]"
-    >
+    <Box className="flex-1 min-h-[500px]">
       <Text
         style={{ fontFamily: "Sen_Bold" }}
         className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
@@ -799,11 +796,11 @@ export default function SignUpScreen() {
           </Text>
         )}
       </Button>
-    </Animated.View>
+    </Box>
   );
 
   const renderStepFour = () => (
-    <Animated.View entering={FadeInRight} exiting={FadeOutLeft}>
+    <>
       <Text
         style={{ fontFamily: "Sen_Bold" }}
         className="text-2xl font-semibold text-[#E2E8F0] mb-5 text-center"
@@ -938,7 +935,7 @@ export default function SignUpScreen() {
           />
         </Input>
       </FormControl>
-    </Animated.View>
+    </>
   );
 
   return (
@@ -957,86 +954,94 @@ export default function SignUpScreen() {
             }}
             keyboardShouldPersistTaps="handled"
           >
-            <Text
-              style={{ fontFamily: "Sen_Bold" }}
-              className="text-[28px] text-[#F7FAFC] text-center mb-[30px]"
+            <Animated.View
+              key={step}
+              entering={FadeInRight.duration(500)
+                .delay(200)
+                .easing(Easing.out(Easing.exp))}
+              exiting={FadeOutLeft.duration(200).easing(Easing.in(Easing.exp))}
             >
-              Create Account
-            </Text>
+              <Text
+                style={{ fontFamily: "Sen_Bold" }}
+                className="text-[28px] text-[#F7FAFC] text-center mb-[30px]"
+              >
+                Create Account
+              </Text>
 
-            {step === 1 && renderStepOne()}
-            {step === 2 && renderStepTwo()}
-            {step === 3 && renderStepThree()}
-            {step === 4 && renderStepFour()}
+              {step === 1 && renderStepOne()}
+              {step === 2 && renderStepTwo()}
+              {step === 3 && renderStepThree()}
+              {step === 4 && renderStepFour()}
 
-            {error ? (
-              <Box className="bg-white/70 rounded-2xl border border-white/20">
-                <Text
-                  style={{ fontFamily: "Sen" }}
-                  className="text-red-500 text-center my-[10px] text-[14px]"
-                >
-                  {error}
-                </Text>
-              </Box>
-            ) : null}
-
-            <Animated.View className="mt-5" style={buttonAnimatedStyle}>
-              <Box className="flex-row justify-center gap-10">
-                <Button
-                  className="bg-[#F0F5FA] py-[18px] h-[55px] w-[120px] rounded-[14px] items-center"
-                  style={actionButtonShadow}
-                  onPress={handlePrevStep}
-                  onPressIn={handleButtonPressIn}
-                  onPressOut={handleButtonPressOut}
-                >
-                  <ButtonIcon as={ArrowLeft} />
-                  <ButtonText
-                    style={{ fontFamily: "Sen_Bold" }}
-                    className="text-black text-[18px]"
+              {error ? (
+                <Box className="bg-white/70 rounded-2xl border border-white/20">
+                  <Text
+                    style={{ fontFamily: "Sen" }}
+                    className="text-red-500 text-center my-[10px] text-[14px]"
                   >
-                    Prev
-                  </ButtonText>
-                </Button>
-                {step !== 3 &&
-                  (step < 4 ? (
-                    <Button
-                      className={`bg-[#F0F5FA] py-[18px] h-[55px] rounded-[14px] items-center ${"w-[120px]"}`}
-                      style={actionButtonShadow}
-                      isDisabled={loading}
-                      onPress={handleNextStep}
-                      onPressIn={handleButtonPressIn}
-                      onPressOut={handleButtonPressOut}
+                    {error}
+                  </Text>
+                </Box>
+              ) : null}
+
+              <Animated.View className="mt-5" style={buttonAnimatedStyle}>
+                <Box className="flex-row justify-center gap-10">
+                  <Button
+                    className="bg-[#F0F5FA] h-[55px] w-[120px] rounded-[14px] items-center"
+                    style={actionButtonShadow}
+                    onPress={handlePrevStep}
+                    onPressIn={handleButtonPressIn}
+                    onPressOut={handleButtonPressOut}
+                  >
+                    <ButtonIcon as={ArrowLeft} />
+                    <ButtonText
+                      style={{ fontFamily: "Sen_Bold" }}
+                      className="text-black text-xl"
                     >
-                      <ButtonText
-                        style={{ fontFamily: "Sen_Bold" }}
-                        className="text-black text-[18px]"
+                      Prev
+                    </ButtonText>
+                  </Button>
+                  {step !== 3 &&
+                    (step < 4 ? (
+                      <Button
+                        className={`bg-[#F0F5FA] h-[55px] rounded-[14px] items-center ${"w-[120px]"}`}
+                        style={actionButtonShadow}
+                        isDisabled={loading}
+                        onPress={handleNextStep}
+                        onPressIn={handleButtonPressIn}
+                        onPressOut={handleButtonPressOut}
                       >
-                        Next
-                      </ButtonText>
-                      <ButtonIcon as={ArrowRight} />
-                    </Button>
-                  ) : (
-                    <Button
-                      className="bg-[#F0F5FA] py-[18px] h-[55px] w-[120px] rounded-[14px] items-center"
-                      style={actionButtonShadow}
-                      isDisabled={loading}
-                      onPress={handleSignUp}
-                      onPressIn={handleButtonPressIn}
-                      onPressOut={handleButtonPressOut}
-                    >
-                      {loading ? (
-                        <ActivityIndicator color="#192f6a" />
-                      ) : (
                         <ButtonText
                           style={{ fontFamily: "Sen_Bold" }}
-                          className="text-black text-[18px]"
+                          className="text-black text-xl"
                         >
-                          Sign Up
+                          Next
                         </ButtonText>
-                      )}
-                    </Button>
-                  ))}
-              </Box>
+                        <ButtonIcon as={ArrowRight} />
+                      </Button>
+                    ) : (
+                      <Button
+                        className="bg-[#F0F5FA] h-[55px] w-[120px] rounded-[14px] items-center"
+                        style={actionButtonShadow}
+                        isDisabled={loading}
+                        onPress={handleSignUp}
+                        onPressIn={handleButtonPressIn}
+                        onPressOut={handleButtonPressOut}
+                      >
+                        {loading ? (
+                          <ActivityIndicator color="#192f6a" />
+                        ) : (
+                          <ButtonText
+                            style={{ fontFamily: "Sen_Bold" }}
+                            className="text-black text-xl"
+                          >
+                            Sign Up
+                          </ButtonText>
+                        )}
+                      </Button>
+                    ))}
+                </Box>
+              </Animated.View>
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
