@@ -15,8 +15,8 @@ axiosInstance.interceptors.request.use(
     const tokenString = await AsyncStorage.getItem("access_token");
     if (tokenString) {
       // Parse the token and add it to the Authorization header
-      const token = JSON.parse(tokenString).access_token;
-      config.headers.Authorization = `Bearer ${token}`;
+      // const token = JSON.parse(tokenString).access_token;
+      config.headers.Authorization = `Bearer ${tokenString}`;
     }
     return config;
   },
