@@ -22,6 +22,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Sen: require("../assets/fonts/Sen-Regular.ttf"),
+    Sen_Bold: require("../assets/fonts/Sen-Bold.ttf"),
   });
 
   useEffect(() => {

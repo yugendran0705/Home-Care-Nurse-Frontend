@@ -305,7 +305,7 @@ export default function SignUpScreen() {
       await AsyncStorage.setItem("access_token", access_token);
       await AsyncStorage.setItem("refresh_token", refresh_token);
       Alert.alert("Success!", "Your nurse profile has been created.", [
-        { text: "OK", onPress: () => router.push("/(tabs)/profile") },
+        { text: "OK", onPress: () => router.push("/(tabs)") },
       ]);
     } catch (e: any) {
       const apiMessage =
