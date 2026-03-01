@@ -4,7 +4,6 @@ import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
-import data from "@/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import {
@@ -18,7 +17,7 @@ import {
   ShieldCheckIcon,
   ShieldOffIcon,
   Star,
-  User as user,
+  User as UserIcon,
   Venus,
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
@@ -81,12 +80,7 @@ export default function ProfileScreen() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem("access_token");
-      const response = await axiosInstance.get(`${data.apiUrl}/nurses/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axiosInstance.get("/nurses/me");
       setProfile(response.data);
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -177,7 +171,7 @@ export default function ProfileScreen() {
               <Text
                 style={{
                   fontSize: 16,
-                  color: profile.is_verified ? "#4CD94" : "#FF9500",
+                  color: profile.is_verified ? "#4CD964" : "#FF9500",
                   fontFamily: "Sen",
                 }}
               >
@@ -265,7 +259,7 @@ export default function ProfileScreen() {
               </Box>
               {profile.bio ? (
                 <Box className="flex-row items-center gap-4">
-                  <Icon as={user} className="text-black" />
+                  <Icon as={UserIcon} className="text-black" />
                   <Text
                     style={{ fontFamily: "Sen" }}
                     className="text-lg text-black"

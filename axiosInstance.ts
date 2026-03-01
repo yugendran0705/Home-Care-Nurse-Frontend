@@ -14,8 +14,6 @@ axiosInstance.interceptors.request.use(
   async (config) => {
     const tokenString = await AsyncStorage.getItem("access_token");
     if (tokenString) {
-      // Parse the token and add it to the Authorization header
-      // const token = JSON.parse(tokenString).access_token;
       config.headers.Authorization = `Bearer ${tokenString}`;
     }
     return config;
@@ -38,22 +36,14 @@ axiosInstance.interceptors.response.use(
         const refreshTokenString = await AsyncStorage.getItem("refresh_token");
         if (!refreshTokenString) throw new Error("No refresh token found");
 
-        const refreshToken = JSON.parse(refreshTokenString).refresh_token;
-
         // Call the refresh token endpoint
         const { data } = await axios.post(`${urlData.apiUrl}/users/refresh`, {
-          refresh_token: refreshToken,
+          refresh_token: refreshTokenString,
         });
 
         // Store the new tokens
-        await AsyncStorage.setItem(
-          "access_token",
-          JSON.stringify({ access_token: data.access_token }),
-        );
-        await AsyncStorage.setItem(
-          "refresh_token",
-          JSON.stringify({ refresh_token: data.refresh_token }),
-        );
+        await AsyncStorage.setItem("access_token", data.access_token);
+        await AsyncStorage.setItem("refresh_token", data.refresh_token);
 
         // Update the header of the original request with the new token
         originalRequest.headers["Authorization"] =

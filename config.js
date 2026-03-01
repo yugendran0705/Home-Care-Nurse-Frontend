@@ -1,4 +1,6 @@
+import Constants from "expo-constants";
+
 const data = {
-  apiUrl: "http://10.153.63.196:8000/api/v1",
+  apiUrl: Constants.expoConfig?.extra?.apiUrl,
 };
 export default data;

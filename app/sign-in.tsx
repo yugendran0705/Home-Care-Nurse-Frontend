@@ -26,7 +26,6 @@ import { Text } from "@/components/ui/text/index";
 import { VStack } from "@/components/ui/vstack/index";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -45,7 +44,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import data from "../config.js";
+import axiosInstance from "../axiosInstance";
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -121,7 +120,7 @@ export default function SignInScreen() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${data.apiUrl}/users/login`, {
+      const response = await axiosInstance.post("/users/login", {
         email: credentials.email.trim(),
         password: credentials.password.trim(),
       });
