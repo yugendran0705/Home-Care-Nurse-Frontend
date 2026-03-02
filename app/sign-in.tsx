@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/input/index";
 import { Text } from "@/components/ui/text/index";
 import { VStack } from "@/components/ui/vstack/index";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
@@ -34,8 +33,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StatusBar,
-  StyleSheet,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -48,7 +45,6 @@ import axiosInstance from "../axiosInstance";
 
 export default function SignInScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? "light";
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -105,6 +101,16 @@ export default function SignInScreen() {
     transform: [{ translateY: footerTranslateY.value }],
   }));
 
+  const normalizeErrorMessage = (errorValue: unknown) => {
+    if (typeof errorValue !== "string")
+      return "Invalid credentials or network error.";
+
+    const compactMessage = errorValue.replace(/\s+/g, " ").trim();
+    if (!compactMessage) return "Invalid credentials or network error.";
+
+    return compactMessage;
+  };
+
   const handleSignIn = async () => {
     if (isLoading) return;
     setError("");
@@ -120,7 +126,7 @@ export default function SignInScreen() {
     setIsLoading(true);
 
     try {
-      const response = await axiosInstance.post("/users/login", {
+      const response = await axiosInstance.post("users/login", {
         email: credentials.email.trim(),
         password: credentials.password.trim(),
       });
@@ -133,18 +139,17 @@ export default function SignInScreen() {
       router.push("/(tabs)/profile");
     } catch (e: any) {
       const errorMessage =
-        (e.response &&
+        (e.message &&
+          e.response &&
           e.response.data &&
           (e.response.data.message || e.response.data.error)) ||
         "Invalid credentials or network error.";
-      setError(errorMessage);
+      setError(e.message || normalizeErrorMessage(errorMessage));
       console.warn("Sign in failed:", errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
-
-  // const styles = getStyles(colorScheme);
 
   return (
     <LinearGradient colors={["#1a1a1a", "#000000"]} className="flex-1">
@@ -158,7 +163,7 @@ export default function SignInScreen() {
           >
             <VStack className="items-center flex-1 mx-5">
               <Animated.View
-                className="items-center mb-[16px]"
+                className="items-center"
                 style={headerAnimatedStyle}
               >
                 <Box className="w-[85px] h-[71px] mt-[60px]">
@@ -247,12 +252,14 @@ export default function SignInScreen() {
                     </Input>
                   </FormControl>
                   {!!error && (
-                    <Text
-                      style={{ fontFamily: "Sen" }}
-                      className="text-red-500 font-Sen"
-                    >
-                      {error}
-                    </Text>
+                    <Box className="w-full min-h-[44px] rounded-xl bg-red-50 px-3 py-2 justify-center">
+                      <Text
+                        style={{ fontFamily: "Sen" }}
+                        className="text-red-600 font-Sen text-[13px] leading-5"
+                      >
+                        {error}
+                      </Text>
+                    </Box>
                   )}
                   <Link href="https://gluestack.io/" className="ml-auto">
                     <Text
@@ -305,140 +312,3 @@ export default function SignInScreen() {
     </LinearGradient>
   );
 }
-
-const getStyles = (colorScheme: "light" | "dark") =>
-  StyleSheet.create({
-    gradientBackground: { flex: 1 },
-
-    safeArea: {
-      flex: 1,
-      paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    },
-
-    keyboardAvoidingView: { flex: 1 },
-
-    innerContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      paddingHorizontal: 24,
-    },
-
-    contentWrapper: {
-      width: "100%",
-      maxWidth: 400,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-
-    headerContainer: {
-      alignItems: "center",
-      marginBottom: 16,
-    },
-
-    logo: {
-      width: 85,
-      height: 71,
-      backgroundColor: "#369BFF",
-      marginTop: 98,
-    },
-
-    title: {
-      fontSize: 32,
-      fontWeight: "bold",
-      color: "#FFFFFF", // white for readability
-      marginTop: 16,
-      textAlign: "center",
-    },
-
-    subtitle: {
-      fontSize: 16,
-      color: "#B0B0B0", // light gray
-      marginTop: 8,
-      textAlign: "center",
-    },
-
-    formContainer: {
-      width: "100%",
-      alignItems: "center",
-      marginBottom: 16,
-    },
-
-    inputContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#2A2A2A", // dark input bg
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: "#444444", // subtle border
-      paddingHorizontal: 16,
-      marginBottom: 16,
-      width: "100%",
-    },
-
-    inputIcon: { marginRight: 12 },
-
-    input: {
-      flex: 1,
-      height: 50,
-      color: "#FFFFFF",
-      fontSize: 16,
-    },
-
-    eyeIcon: { padding: 4 },
-
-    forgotPasswordButton: {
-      alignSelf: "flex-end",
-      marginBottom: 16,
-      width: "100%",
-    },
-
-    forgotPasswordText: {
-      color: "#4c8bf5", // primary accent (blue)
-      fontSize: 14,
-    },
-
-    errorText: {
-      color: "#FF4D4D", // error red
-      textAlign: "center",
-      marginBottom: 16,
-      fontSize: 14,
-    },
-
-    signInButton: {
-      backgroundColor: "#4c8bf5", // accent blue
-      paddingVertical: 10,
-      borderRadius: 12,
-      alignItems: "center",
-      justifyContent: "center",
-      height: 62,
-      width: "100%",
-      marginTop: 8,
-    },
-
-    signInButtonDisabled: {
-      backgroundColor: "#555555", // muted gray
-    },
-
-    signInButtonText: {
-      color: "#FFFFFF",
-      fontSize: 18,
-      fontWeight: "bold",
-    },
-
-    footerContainer: {
-      alignItems: "center",
-      marginTop: 8,
-    },
-
-    footerText: {
-      color: "#B0B0B0", // secondary text
-      fontSize: 14,
-      textAlign: "center",
-    },
-
-    signUpLink: {
-      color: "#4c8bf5", // accent
-      fontWeight: "bold",
-    },
-  });

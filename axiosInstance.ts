@@ -4,12 +4,15 @@ import { router } from "expo-router";
 import urlData from "./config.js";
 
 const apiBaseUrl = urlData?.apiUrl;
+const apiConfigurationError = urlData?.apiConfigurationError;
 
-if (!apiBaseUrl || typeof apiBaseUrl !== "string") {
-  throw new Error(
-    "Missing API configuration: Constants.expoConfig.extra.apiUrl is not set. Configure `extra.apiUrl` in app config/environment before starting the app.",
-  );
-}
+const ensureApiConfiguration = () => {
+  if (apiConfigurationError || !apiBaseUrl) {
+    throw new Error(
+      apiConfigurationError || "Service is down, please try again later.",
+    );
+  }
+};
 
 // validating tokens type
 const getNormalizedTokenFromStorage = async (
@@ -53,13 +56,15 @@ const getNormalizedTokenFromStorage = async (
 
 // Create a dedicated Axios instance
 const axiosInstance = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: apiBaseUrl ?? undefined,
 });
 
 // --- Request Interceptor ---
 // This runs before every request is sent
 axiosInstance.interceptors.request.use(
   async (config) => {
+    ensureApiConfiguration();
+
     const tokenString = await getNormalizedTokenFromStorage("access_token");
     if (tokenString) {
       config.headers.Authorization = `Bearer ${tokenString}`;
@@ -81,6 +86,8 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true; // Mark it as a retry to prevent infinite loops
 
       try {
+        ensureApiConfiguration();
+
         const refreshTokenString =
           await getNormalizedTokenFromStorage("refresh_token");
         if (!refreshTokenString) throw new Error("No refresh token found");

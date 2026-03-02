@@ -80,15 +80,15 @@ export default function ProfileScreen() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/nurses/me");
+      const response = await axiosInstance.get("nurses/me");
       setProfile(response.data);
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
         useNativeDriver: true,
       }).start();
-    } catch (error) {
-      console.log("Failed to fetch profile", error);
+    } catch (e: any) {
+      console.log("Failed to fetch profile", e.message || e);
     } finally {
       setLoading(false);
     }
@@ -181,7 +181,6 @@ export default function ProfileScreen() {
           </Box>
 
           <Box className="mb-2">
-            {/* <Box className="bg-[#1A1A1A] rounded-[12px] p-4 mb-4"> */}
             <VStack space="lg" className="bg-white rounded-[12px] p-4 mb-4">
               <Text
                 style={{ fontFamily: "Sen_Bold" }}

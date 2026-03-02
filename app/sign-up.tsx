@@ -296,7 +296,7 @@ export default function SignUpScreen() {
         years_of_experience: parseInt(formData.years_of_experience, 10) || 0,
       };
 
-      const response = await axiosInstance.post("/nurses/register", payload);
+      const response = await axiosInstance.post("nurses/register", payload);
       const { access_token, refresh_token } = response.data;
       await AsyncStorage.setItem("access_token", access_token);
       await AsyncStorage.setItem("refresh_token", refresh_token);
@@ -306,10 +306,12 @@ export default function SignUpScreen() {
     } catch (e: any) {
       const apiMessage =
         e?.response?.data?.detail ?? e?.response?.data?.message;
-      const errorMessage = normalizeErrorMessage(
-        apiMessage,
-        "Registration failed. Please try again.",
-      );
+      const errorMessage =
+        e.message ||
+        normalizeErrorMessage(
+          apiMessage,
+          "Registration failed. Please try again.",
+        );
       setError(errorMessage);
     } finally {
       setLoading(false);
