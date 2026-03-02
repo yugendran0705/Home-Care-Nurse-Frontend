@@ -3,16 +3,64 @@ import axios from "axios";
 import { router } from "expo-router";
 import urlData from "./config.js";
 
+const apiBaseUrl = urlData?.apiUrl;
+
+if (!apiBaseUrl || typeof apiBaseUrl !== "string") {
+  throw new Error(
+    "Missing API configuration: Constants.expoConfig.extra.apiUrl is not set. Configure `extra.apiUrl` in app config/environment before starting the app.",
+  );
+}
+
+// validating tokens type
+const getNormalizedTokenFromStorage = async (
+  storageKey: "access_token" | "refresh_token",
+) => {
+  const storedValue = await AsyncStorage.getItem(storageKey);
+  if (!storedValue) return null;
+
+  const trimmedValue = storedValue.trim();
+  if (!trimmedValue) return null;
+
+  let normalizedToken: string | null = trimmedValue;
+  const looksLikeJson =
+    trimmedValue.startsWith("{") ||
+    trimmedValue.startsWith("[") ||
+    trimmedValue.startsWith('"');
+
+  if (looksLikeJson) {
+    try {
+      const parsedValue = JSON.parse(trimmedValue);
+
+      if (typeof parsedValue === "string") {
+        normalizedToken = parsedValue;
+      } else if (parsedValue && typeof parsedValue === "object") {
+        const legacyToken = parsedValue[storageKey];
+        normalizedToken = typeof legacyToken === "string" ? legacyToken : null;
+      }
+    } catch {
+      normalizedToken = trimmedValue;
+    }
+  }
+
+  if (!normalizedToken) return null;
+
+  if (normalizedToken !== storedValue) {
+    await AsyncStorage.setItem(storageKey, normalizedToken);
+  }
+
+  return normalizedToken;
+};
+
 // Create a dedicated Axios instance
 const axiosInstance = axios.create({
-  baseURL: urlData.apiUrl,
+  baseURL: apiBaseUrl,
 });
 
 // --- Request Interceptor ---
 // This runs before every request is sent
 axiosInstance.interceptors.request.use(
   async (config) => {
-    const tokenString = await AsyncStorage.getItem("access_token");
+    const tokenString = await getNormalizedTokenFromStorage("access_token");
     if (tokenString) {
       config.headers.Authorization = `Bearer ${tokenString}`;
     }
@@ -33,11 +81,12 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true; // Mark it as a retry to prevent infinite loops
 
       try {
-        const refreshTokenString = await AsyncStorage.getItem("refresh_token");
+        const refreshTokenString =
+          await getNormalizedTokenFromStorage("refresh_token");
         if (!refreshTokenString) throw new Error("No refresh token found");
 
         // Call the refresh token endpoint
-        const { data } = await axios.post(`${urlData.apiUrl}/users/refresh`, {
+        const { data } = await axios.post(`${apiBaseUrl}/users/refresh`, {
           refresh_token: refreshTokenString,
         });
 
