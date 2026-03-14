@@ -14,6 +14,11 @@ const ensureApiConfiguration = () => {
   }
 };
 
+const getNormalizedApiBaseUrl = () => {
+  ensureApiConfiguration();
+  return apiBaseUrl!.replace(/\/+$/, "");
+};
+
 // validating tokens type
 const getNormalizedTokenFromStorage = async (
   storageKey: "access_token" | "refresh_token",
@@ -93,7 +98,8 @@ axiosInstance.interceptors.response.use(
         if (!refreshTokenString) throw new Error("No refresh token found");
 
         // Call the refresh token endpoint
-        const { data } = await axios.post(`${apiBaseUrl}/users/refresh`, {
+        const refreshUrl = `${getNormalizedApiBaseUrl()}/users/refresh`;
+        const { data } = await axios.post(refreshUrl, {
           refresh_token: refreshTokenString,
         });
 

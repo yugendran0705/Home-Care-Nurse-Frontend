@@ -307,11 +307,10 @@ export default function SignUpScreen() {
       const apiMessage =
         e?.response?.data?.detail ?? e?.response?.data?.message;
       const errorMessage =
-        e.message ||
         normalizeErrorMessage(
           apiMessage,
           "Registration failed. Please try again.",
-        );
+        ) || e.message;
       setError(errorMessage);
     } finally {
       setLoading(false);

@@ -138,13 +138,15 @@ export default function SignInScreen() {
 
       router.push("/(tabs)/profile");
     } catch (e: any) {
-      const errorMessage =
-        (e.message &&
-          e.response &&
-          e.response.data &&
-          (e.response.data.message || e.response.data.error)) ||
-        "Invalid credentials or network error.";
-      setError(e.message || normalizeErrorMessage(errorMessage));
+      const apiErrorRaw =
+        e &&
+        e.response &&
+        e.response.data &&
+        (e.response.data.message || e.response.data.error);
+      const errorMessage = apiErrorRaw
+        ? normalizeErrorMessage(apiErrorRaw)
+        : e.message || "Invalid credentials or network error.";
+      setError(errorMessage);
       console.warn("Sign in failed:", errorMessage);
     } finally {
       setIsLoading(false);

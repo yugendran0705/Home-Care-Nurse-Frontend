@@ -15,7 +15,7 @@ const AuthGate = () => {
         setTimeout(() => {
           if (accessToken) {
             // If token exists, user is logged in.
-            router.replace("/profile");
+            router.replace("/(tabs)/profile");
           } else {
             // If no token, send them to the sign-in screen.
             router.replace("/sign-in");
