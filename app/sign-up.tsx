@@ -18,7 +18,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { router } from "expo-router";
@@ -41,7 +40,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import data from "../config.js";
+import axiosInstance from "../axiosInstance";
 
 interface Address {
   address_line_1: string;
@@ -297,23 +296,21 @@ export default function SignUpScreen() {
         years_of_experience: parseInt(formData.years_of_experience, 10) || 0,
       };
 
-      const response = await axios.post(
-        `${data.apiUrl}/nurses/register`,
-        payload,
-      );
+      const response = await axiosInstance.post("nurses/register", payload);
       const { access_token, refresh_token } = response.data;
       await AsyncStorage.setItem("access_token", access_token);
       await AsyncStorage.setItem("refresh_token", refresh_token);
       Alert.alert("Success!", "Your nurse profile has been created.", [
-        { text: "OK", onPress: () => router.push("/(tabs)") },
+        { text: "OK", onPress: () => router.push("/(tabs)/profile") },
       ]);
     } catch (e: any) {
       const apiMessage =
         e?.response?.data?.detail ?? e?.response?.data?.message;
-      const errorMessage = normalizeErrorMessage(
-        apiMessage,
-        "Registration failed. Please try again.",
-      );
+      const errorMessage =
+        normalizeErrorMessage(
+          apiMessage,
+          "Registration failed. Please try again.",
+        ) || e.message;
       setError(errorMessage);
     } finally {
       setLoading(false);
