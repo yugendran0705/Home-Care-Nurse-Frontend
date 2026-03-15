@@ -295,7 +295,7 @@ export default function ProfileScreen() {
           </Box>
 
           <Button
-            className="bg-red-500 py-4 rounded-xl h-15 mt-6 mb-10"
+            className="bg-red-500 py-4 rounded-xl h-[60px] mt-6 mb-10"
             onPress={handleLogout}
           >
             <ButtonIcon as={LogOut} className="text-white mr-2" />
