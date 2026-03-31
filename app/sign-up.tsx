@@ -224,6 +224,10 @@ export default function SignUpScreen() {
         );
         return;
       }
+      if (formData.phone_number.length !== 10) {
+        setError("Phone number must be 10 digits.");
+        return;
+      }
     }
     if (
       step === 2 &&
@@ -998,45 +1002,44 @@ export default function SignUpScreen() {
                       Prev
                     </ButtonText>
                   </Button>
-                  {step !== 3 &&
-                    (step < 4 ? (
-                      <Button
-                        className={`bg-[#F0F5FA] h-[55px] rounded-[14px] items-center ${"w-[120px]"}`}
-                        style={actionButtonShadow}
-                        isDisabled={loading}
-                        onPress={handleNextStep}
-                        onPressIn={handleButtonPressIn}
-                        onPressOut={handleButtonPressOut}
+                  {step < 4 ? (
+                    <Button
+                      className={`bg-[#F0F5FA] h-[55px] rounded-[14px] items-center ${"w-[120px]"}`}
+                      style={actionButtonShadow}
+                      isDisabled={loading}
+                      onPress={handleNextStep}
+                      onPressIn={handleButtonPressIn}
+                      onPressOut={handleButtonPressOut}
+                    >
+                      <ButtonText
+                        style={{ fontFamily: "Sen_Bold" }}
+                        className="text-black text-xl"
                       >
+                        Next
+                      </ButtonText>
+                      <ButtonIcon as={ArrowRight} />
+                    </Button>
+                  ) : (
+                    <Button
+                      className="bg-[#F0F5FA] h-[55px] w-[120px] rounded-[14px] items-center"
+                      style={actionButtonShadow}
+                      isDisabled={loading}
+                      onPress={handleSignUp}
+                      onPressIn={handleButtonPressIn}
+                      onPressOut={handleButtonPressOut}
+                    >
+                      {loading ? (
+                        <ActivityIndicator color="#192f6a" />
+                      ) : (
                         <ButtonText
                           style={{ fontFamily: "Sen_Bold" }}
                           className="text-black text-xl"
                         >
-                          Next
+                          Sign Up
                         </ButtonText>
-                        <ButtonIcon as={ArrowRight} />
-                      </Button>
-                    ) : (
-                      <Button
-                        className="bg-[#F0F5FA] h-[55px] w-[120px] rounded-[14px] items-center"
-                        style={actionButtonShadow}
-                        isDisabled={loading}
-                        onPress={handleSignUp}
-                        onPressIn={handleButtonPressIn}
-                        onPressOut={handleButtonPressOut}
-                      >
-                        {loading ? (
-                          <ActivityIndicator color="#192f6a" />
-                        ) : (
-                          <ButtonText
-                            style={{ fontFamily: "Sen_Bold" }}
-                            className="text-black text-xl"
-                          >
-                            Sign Up
-                          </ButtonText>
-                        )}
-                      </Button>
-                    ))}
+                      )}
+                    </Button>
+                  )}
                 </Box>
               </Animated.View>
             </Animated.View>
