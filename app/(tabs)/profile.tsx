@@ -23,6 +23,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Image,
   RefreshControl,
@@ -104,10 +105,22 @@ export default function ProfileScreen() {
     setRefreshing(false);
   }, [fetchProfile]);
 
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem("access_token");
-    await AsyncStorage.removeItem("refresh_token");
-    router.replace("/sign-in");
+  const handleLogout = () => {
+    Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await AsyncStorage.removeItem("access_token");
+          await AsyncStorage.removeItem("refresh_token");
+          router.replace("/sign-in");
+        },
+      },
+    ]);
   };
 
   if (loading) {
