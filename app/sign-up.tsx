@@ -85,7 +85,7 @@ interface Service {
   service_name: string;
   description: string;
   base_price: string;
-  duration: bigint;
+  duration: number;
   duration_type: string;
   is_active: boolean;
   is_qualified: boolean;
@@ -236,30 +236,30 @@ export default function SignUpScreen() {
       getServices();
     }
 
-    if (step !== 3 || hasInitializedLocation) return;
+    if (step === 3 && !hasInitializedLocation) {
+      const getLocation = async () => {
+        setLoading(true);
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setError("Permission to access location was denied");
+          setLoading(false);
+          setHasInitializedLocation(true);
+          return;
+        }
+        try {
+          let currentLocation = await Location.getCurrentPositionAsync({});
+          handleAddressChange("latitude", currentLocation.coords.latitude);
+          handleAddressChange("longitude", currentLocation.coords.longitude);
+        } catch {
+          setError("Could not fetch location. Please select it on the map.");
+        } finally {
+          setHasInitializedLocation(true);
+          setLoading(false);
+        }
+      };
 
-    const getLocation = async () => {
-      setLoading(true);
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setError("Permission to access location was denied");
-        setLoading(false);
-        setHasInitializedLocation(true);
-        return;
-      }
-      try {
-        let currentLocation = await Location.getCurrentPositionAsync({});
-        handleAddressChange("latitude", currentLocation.coords.latitude);
-        handleAddressChange("longitude", currentLocation.coords.longitude);
-      } catch {
-        setError("Could not fetch location. Please select it on the map.");
-      } finally {
-        setHasInitializedLocation(true);
-        setLoading(false);
-      }
-    };
-
-    getLocation();
+      getLocation();
+    }
 
     return () => {
       controller.abort();
@@ -333,7 +333,8 @@ export default function SignUpScreen() {
         formData.address.address_line_1 &&
         formData.address.city &&
         formData.address.state &&
-        formData.address.pincode
+        formData.address.pincode &&
+        formData.address.pincode.length === 6
       );
     }
     if (step === 5) {
@@ -1124,18 +1125,18 @@ export default function SignUpScreen() {
           <Box className="flex-row justify-between my-2">
             <Button
               onPress={() => clearAll()}
-              className="bg-black/10 w-30 h-10 rounded-md"
+              className="bg-black/10 w-[120px] h-10 rounded-md"
             >
               <Text
                 style={{ fontFamily: "Sen_Bold" }}
-                className="text-l font-semibold text-white text-center"
+                className="text-lg font-semibold text-white text-center"
               >
                 Clear all
               </Text>
             </Button>
             <Button
               onPress={() => collapseAll()}
-              className="bg-black/10 w-30 h-10 rounded-md"
+              className="bg-black/10 w-[120px] h-10 rounded-md"
             >
               <Text
                 style={{ fontFamily: "Sen_Bold" }}
