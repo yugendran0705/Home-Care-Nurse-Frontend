@@ -81,6 +81,16 @@ interface FormData {
   profile_picture_url: string;
   address: Address;
 }
+interface Service {
+  service_name: string;
+  description: string;
+  base_price: string;
+  duration: bigint;
+  duration_type: string;
+  is_active: boolean;
+  is_qualified: boolean;
+  id: string;
+}
 
 const initialFormData: FormData = {
   email: "",
@@ -139,13 +149,14 @@ export default function SignUpScreen() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [servicesLoading, setServicesLoading] = useState(false);
   const [error, setError] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [hasInitializedLocation, setHasInitializedLocation] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [expandedServices, setExpandedServices] = useState<
     Record<string, boolean>
@@ -187,19 +198,26 @@ export default function SignUpScreen() {
       router.back();
     }
 
+    const controller = new AbortController();
+
     const getServices = async () => {
       setError("");
-      setLoading(true);
+      setServicesLoading(true);
       try {
-        const response = await axiosInstance.get("services/all");
+        const response = await axiosInstance.get("services/all", {
+          signal: controller.signal,
+        });
         const activeServices = response.data.filter(
-          (service: { is_active: any }) => service.is_active,
+          (service: { is_active: boolean }) => service.is_active,
         );
 
         setServices(activeServices);
         setServicesLoaded(true);
         return;
       } catch (e: any) {
+        if (e.name === "CanceledError" || e.name === "AbortError") {
+          return;
+        }
         const apiMessage =
           e?.response?.data?.detail ?? e?.response?.data?.message;
         const errorMessage =
@@ -209,7 +227,7 @@ export default function SignUpScreen() {
           ) || e.message;
         setError(errorMessage);
       } finally {
-        setLoading(false);
+        setServicesLoading(false);
       }
     };
 
@@ -242,6 +260,10 @@ export default function SignUpScreen() {
     };
 
     getLocation();
+
+    return () => {
+      controller.abort();
+    };
   }, [step, hasInitializedLocation, servicesLoaded]);
 
   const handleFormChange = (
@@ -835,12 +857,14 @@ export default function SignUpScreen() {
       </FormControl>
 
       <FormControl size="lg" className="w-full mb-2">
-        <FormControlLabelText
-          style={{ fontFamily: "Sen" }}
-          className="text-white text-md uppercase font-Sen"
-        >
-          Short Bio
-        </FormControlLabelText>
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Short Bio
+          </FormControlLabelText>
+        </FormControlLabel>
         <Input
           style={{
             elevation: 5,
@@ -1049,12 +1073,14 @@ export default function SignUpScreen() {
       </FormControl>
 
       <FormControl size="lg" className="w-full mb-2">
-        <FormControlLabelText
-          style={{ fontFamily: "Sen" }}
-          className="text-white text-md uppercase font-Sen"
-        >
-          Pincode
-        </FormControlLabelText>
+        <FormControlLabel>
+          <FormControlLabelText
+            style={{ fontFamily: "Sen" }}
+            className="text-white text-md uppercase font-Sen"
+          >
+            Pincode
+          </FormControlLabelText>
+        </FormControlLabel>
         <Input
           style={{
             elevation: 5,
@@ -1089,121 +1115,129 @@ export default function SignUpScreen() {
       >
         Step 5: Choose Services
       </Text>
-      <Box className="flex-row justify-between my-2">
-        <Button
-          onPress={() => clearAll()}
-          className="bg-black/10 w-30 h-10 rounded-md"
-        >
-          <Text
-            style={{ fontFamily: "Sen_Bold" }}
-            className="text-l font-semibold text-white text-center"
+      {servicesLoading ? (
+        <Box className="flex-1 items-center justify-center my-10">
+          <ActivityIndicator size="large" color="#ffffff" />
+        </Box>
+      ) : (
+        <>
+          <Box className="flex-row justify-between my-2">
+            <Button
+              onPress={() => clearAll()}
+              className="bg-black/10 w-30 h-10 rounded-md"
+            >
+              <Text
+                style={{ fontFamily: "Sen_Bold" }}
+                className="text-l font-semibold text-white text-center"
+              >
+                Clear all
+              </Text>
+            </Button>
+            <Button
+              onPress={() => collapseAll()}
+              className="bg-black/10 w-30 h-10 rounded-md"
+            >
+              <Text
+                style={{ fontFamily: "Sen_Bold" }}
+                className="text-l font-semibold text-white text-center"
+              >
+                Collapse all
+              </Text>
+            </Button>
+          </Box>
+
+          <Box
+            style={{ maxHeight: 450 }}
+            className="mb-4 mt-4 bg-black/10 rounded-lg p-4"
           >
-            Clear all
-          </Text>
-        </Button>
-        <Button
-          onPress={() => collapseAll()}
-          className="bg-black/10 w-30 h-10 rounded-md"
-        >
-          <Text
-            style={{ fontFamily: "Sen_Bold" }}
-            className="text-l font-semibold text-white text-center"
-          >
-            Collapse all
-          </Text>
-        </Button>
-      </Box>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <CheckboxGroup
+                key={`checkbox-group-${selectedServices.length}-${selectedServices.join(",")}`}
+                value={selectedServices}
+                onChange={(ids) => setSelectedServices(ids as string[])}
+              >
+                {services.map((service) => {
+                  const isExpanded = expandedServices[service.id];
+                  const isSelected = selectedServices.includes(service.id);
 
-      <Box
-        style={{ maxHeight: 450 }}
-        className="mb-4 mt-4 bg-black/10 rounded-lg p-4"
-      >
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <CheckboxGroup
-            key={`checkbox-group-${selectedServices.length}-${selectedServices.join(",")}`}
-            value={selectedServices}
-            onChange={(ids) => setSelectedServices(ids as string[])}
-          >
-            {services.map((service) => {
-              const isExpanded = expandedServices[service.id];
-              const isSelected = selectedServices.includes(service.id);
-
-              return (
-                <Box
-                  key={service.id}
-                  className={`rounded-xl px-4 py-3 my-3 shadow-md ${
-                    isSelected ? "bg-[#369BFF]/80" : "bg-white"
-                  }`}
-                >
-                  {/* Top Row */}
-                  <Box className="flex-row items-center justify-between">
-                    <Checkbox
-                      value={service.id}
-                      size="md"
-                      // className="bg-transparent"
-                    >
-                      <CheckboxIndicator
-                        className={`mr-2 border-black ${
-                          isSelected ? "bg-black" : "bg-white"
-                        }`}
-                      >
-                        <CheckboxIcon
-                          as={Check}
-                          width={15}
-                          className={
-                            isSelected ? "text-blue-500" : "text-white"
-                          }
-                        />
-                      </CheckboxIndicator>
-
-                      <CheckboxLabel
-                        style={{ fontFamily: "Sen_Bold" }}
-                        className="text-black text-lg bg-transparent"
-                      >
-                        {service.service_name}
-                      </CheckboxLabel>
-                    </Checkbox>
-
-                    {/* Expand / Collapse Button */}
-                    <Button
-                      onPress={() => toggleExpand(service.id)}
-                      className="ml-2 h-8 w-8 bg-transparent"
-                    >
-                      <ButtonIcon
-                        color={isSelected ? "white" : "black"}
-                        as={isExpanded ? ChevronUp : ChevronDown}
-                      />
-                    </Button>
-                  </Box>
-
-                  {/* Expanded Section */}
-                  {isExpanded && (
+                  return (
                     <Box
-                      className={`mt-2 pt-3 border-t ${isSelected ? "border-white/80" : "border-black/20"}`}
+                      key={service.id}
+                      className={`rounded-xl px-4 py-3 my-3 shadow-md ${
+                        isSelected ? "bg-[#369BFF]/80" : "bg-white"
+                      }`}
                     >
-                      <Text
-                        size="md"
-                        style={{ fontFamily: "Sen" }}
-                        className={isSelected ? "text-white" : "text-black"}
-                      >
-                        {service.description}
-                      </Text>
+                      {/* Top Row */}
+                      <Box className="flex-row items-center justify-between">
+                        <Checkbox
+                          value={service.id}
+                          size="md"
+                          // className="bg-transparent"
+                        >
+                          <CheckboxIndicator
+                            className={`mr-2 border-black ${
+                              isSelected ? "bg-black" : "bg-white"
+                            }`}
+                          >
+                            <CheckboxIcon
+                              as={Check}
+                              width={15}
+                              className={
+                                isSelected ? "text-blue-500" : "text-white"
+                              }
+                            />
+                          </CheckboxIndicator>
 
-                      <Text
-                        size="md"
-                        style={{ fontFamily: "Sen" }}
-                        className={isSelected ? "text-white" : "text-black"}
-                      >
-                        Duration: {service.duration} {service.duration_type}
-                      </Text>
+                          <CheckboxLabel
+                            style={{ fontFamily: "Sen_Bold" }}
+                            className="text-black text-lg bg-transparent"
+                          >
+                            {service.service_name}
+                          </CheckboxLabel>
+                        </Checkbox>
+
+                        {/* Expand / Collapse Button */}
+                        <Button
+                          onPress={() => toggleExpand(service.id)}
+                          className="ml-2 h-8 w-8 bg-transparent"
+                        >
+                          <ButtonIcon
+                            color={isSelected ? "white" : "black"}
+                            as={isExpanded ? ChevronUp : ChevronDown}
+                          />
+                        </Button>
+                      </Box>
+
+                      {/* Expanded Section */}
+                      {isExpanded && (
+                        <Box
+                          className={`mt-2 pt-3 border-t ${isSelected ? "border-white/80" : "border-black/20"}`}
+                        >
+                          <Text
+                            size="md"
+                            style={{ fontFamily: "Sen" }}
+                            className={isSelected ? "text-white" : "text-black"}
+                          >
+                            {service.description}
+                          </Text>
+
+                          <Text
+                            size="md"
+                            style={{ fontFamily: "Sen" }}
+                            className={isSelected ? "text-white" : "text-black"}
+                          >
+                            Duration: {service.duration} {service.duration_type}
+                          </Text>
+                        </Box>
+                      )}
                     </Box>
-                  )}
-                </Box>
-              );
-            })}
-          </CheckboxGroup>
-        </ScrollView>
-      </Box>
+                  );
+                })}
+              </CheckboxGroup>
+            </ScrollView>
+          </Box>
+        </>
+      )}
     </>
   );
 
