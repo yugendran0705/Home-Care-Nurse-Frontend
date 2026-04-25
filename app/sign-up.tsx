@@ -1,13 +1,6 @@
 import { Box } from "@/components/ui/box/index";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button/index";
 import {
-  Checkbox,
-  CheckboxGroup,
-  CheckboxIcon,
-  CheckboxIndicator,
-  CheckboxLabel,
-} from "@/components/ui/checkbox/index";
-import {
   FormControl,
   FormControlLabel,
   FormControlLabelText,
@@ -28,15 +21,7 @@ import DateTimePicker, {
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { router } from "expo-router";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Mars,
-  Venus,
-} from "lucide-react-native";
+import { ArrowLeft, ArrowRight, Mars, Venus } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -81,17 +66,6 @@ interface FormData {
   profile_picture_url: string;
   address: Address;
 }
-interface Service {
-  service_name: string;
-  description: string;
-  base_price: string;
-  duration: number;
-  duration_type: string;
-  is_active: boolean;
-  is_qualified: boolean;
-  id: string;
-}
-
 const initialFormData: FormData = {
   email: "",
   password: "",
@@ -126,22 +100,9 @@ export default function SignUpScreen() {
   };
 
   const normalizeErrorMessage = (value: unknown, fallback: string) => {
-    if (typeof value === "string") {
-      // Return fallback if string is empty
-      return value.trim() || fallback;
-    }
-    if (Array.isArray(value)) {
-      const joined = value.join("\n").trim();
-      return joined || fallback;
-    }
-    if (value && typeof value === "object") {
-      try {
-        const stringified = JSON.stringify(value);
-        return stringified.trim() || fallback;
-      } catch {
-        return fallback;
-      }
-    }
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) return value.join("\n");
+    if (value && typeof value === "object") return JSON.stringify(value);
     return fallback;
   };
 
@@ -149,35 +110,11 @@ export default function SignUpScreen() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [servicesLoading, setServicesLoading] = useState(false);
   const [error, setError] = useState("");
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [hasInitializedLocation, setHasInitializedLocation] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-
-  const [services, setServices] = useState<Service[]>([]);
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [expandedServices, setExpandedServices] = useState<
-    Record<string, boolean>
-  >({});
-  const [servicesLoaded, setServicesLoaded] = useState(false);
-
-  const toggleExpand = (id: string) => {
-    setExpandedServices((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const collapseAll = () => {
-    setExpandedServices({});
-  };
-
-  const clearAll = () => {
-    setSelectedServices([]);
-    setExpandedServices({});
-  };
 
   // --- ANIMATION VALUE FOR BUTTON PRESS ---
   const scale = useSharedValue(1);
@@ -198,73 +135,30 @@ export default function SignUpScreen() {
       router.back();
     }
 
-    const controller = new AbortController();
+    if (step !== 3 || hasInitializedLocation) return;
 
-    const getServices = async () => {
-      setError("");
-      setServicesLoading(true);
-      try {
-        const response = await axiosInstance.get("services/all", {
-          signal: controller.signal,
-        });
-        const activeServices = response.data.filter(
-          (service: { is_active: boolean }) => service.is_active,
-        );
-
-        setServices(activeServices);
-        setServicesLoaded(true);
+    const getLocation = async () => {
+      setLoading(true);
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setError("Permission to access location was denied");
+        setLoading(false);
+        setHasInitializedLocation(true);
         return;
-      } catch (e: any) {
-        if (e.name === "CanceledError" || e.name === "AbortError") {
-          return;
-        }
-        const apiMessage =
-          e?.response?.data?.detail ?? e?.response?.data?.message;
-        const errorMessage =
-          normalizeErrorMessage(
-            apiMessage,
-            "Get services failed. Please try again.",
-          ) || e.message;
-        setError(errorMessage);
+      }
+      try {
+        let currentLocation = await Location.getCurrentPositionAsync({});
+        handleAddressChange("latitude", currentLocation.coords.latitude);
+        handleAddressChange("longitude", currentLocation.coords.longitude);
+      } catch {
+        setError("Could not fetch location. Please select it on the map.");
       } finally {
-        setServicesLoading(false);
+        setHasInitializedLocation(true);
+        setLoading(false);
       }
     };
-
-    // Only fetch services once when step changes to 5 and they haven't been loaded yet
-    if (step === 5 && !servicesLoaded) {
-      getServices();
-    }
-
-    if (step === 3 && !hasInitializedLocation) {
-      const getLocation = async () => {
-        setLoading(true);
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          setError("Permission to access location was denied");
-          setLoading(false);
-          setHasInitializedLocation(true);
-          return;
-        }
-        try {
-          let currentLocation = await Location.getCurrentPositionAsync({});
-          handleAddressChange("latitude", currentLocation.coords.latitude);
-          handleAddressChange("longitude", currentLocation.coords.longitude);
-        } catch {
-          setError("Could not fetch location. Please select it on the map.");
-        } finally {
-          setHasInitializedLocation(true);
-          setLoading(false);
-        }
-      };
-
-      getLocation();
-    }
-
-    return () => {
-      controller.abort();
-    };
-  }, [step, hasInitializedLocation, servicesLoaded]);
+    getLocation();
+  }, [step, hasInitializedLocation]);
 
   const handleFormChange = (
     field: keyof Omit<FormData, "address">,
@@ -306,43 +200,6 @@ export default function SignUpScreen() {
     return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
   };
 
-  const isStepValid = () => {
-    if (step === 1) {
-      return !!(
-        formData.email &&
-        formData.password &&
-        formData.first_name &&
-        formData.last_name &&
-        formData.date_of_birth &&
-        formData.phone_number &&
-        formData.gender
-      );
-    }
-    if (step === 2) {
-      return !!(
-        formData.license_number &&
-        formData.years_of_experience &&
-        formData.profile_picture_url
-      );
-    }
-    if (step === 3) {
-      return true;
-    }
-    if (step === 4) {
-      return !!(
-        formData.address.address_line_1 &&
-        formData.address.city &&
-        formData.address.state &&
-        formData.address.pincode &&
-        formData.address.pincode.length === 6
-      );
-    }
-    if (step === 5) {
-      return !!(selectedServices.length !== 0);
-    }
-    return true;
-  };
-
   const handleNextStep = () => {
     if (step === 1) {
       if (
@@ -381,17 +238,6 @@ export default function SignUpScreen() {
       setError(
         "Please provide your license number, years of experience, and a profile picture URL.",
       );
-      return;
-    }
-    if (
-      step === 4 &&
-      (!formData.address.address_line_1 ||
-        !formData.address.city ||
-        !formData.address.state ||
-        !formData.address.pincode ||
-        formData.address.pincode.length !== 6)
-    ) {
-      setError("Please provide your city, state and pincode.");
       return;
     }
     setError("");
@@ -445,10 +291,6 @@ export default function SignUpScreen() {
   };
 
   const handleSignUp = async () => {
-    if (step === 5 && selectedServices.length === 0) {
-      setError("Please select a service.");
-      return;
-    }
     if (loading) return;
     setError("");
     setLoading(true);
@@ -460,31 +302,20 @@ export default function SignUpScreen() {
 
       const response = await axiosInstance.post("nurses/register", payload);
       const { access_token, refresh_token } = response.data;
-
-      // Store tokens immediately after first response
       await AsyncStorage.setItem("access_token", access_token);
       await AsyncStorage.setItem("refresh_token", refresh_token);
-
-      await axiosInstance.post("nurses/services", {
-        service_ids: selectedServices,
-      });
-
       Alert.alert("Success!", "Your nurse profile has been created.", [
         { text: "OK", onPress: () => router.push("/(tabs)/profile") },
       ]);
     } catch (e: any) {
       const apiMessage =
         e?.response?.data?.detail ?? e?.response?.data?.message;
-      const errorMessage = normalizeErrorMessage(
-        apiMessage,
-        "Registration failed. Please try again.",
-      );
-      // Ensure we always have a string, never an object
-      setError(
-        typeof errorMessage === "string"
-          ? errorMessage
-          : "Registration failed. Please try again.",
-      );
+      const errorMessage =
+        normalizeErrorMessage(
+          apiMessage,
+          "Registration failed. Please try again.",
+        ) || e.message;
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -1108,140 +939,6 @@ export default function SignUpScreen() {
     </>
   );
 
-  const renderStepFive = () => (
-    <>
-      <Text
-        style={{ fontFamily: "Sen_Bold" }}
-        className="text-2xl font-semibold text-[#E2E8F0] mb-1 text-center"
-      >
-        Step 5: Choose Services
-      </Text>
-      {servicesLoading ? (
-        <Box className="flex-1 items-center justify-center my-10">
-          <ActivityIndicator size="large" color="#ffffff" />
-        </Box>
-      ) : (
-        <>
-          <Box className="flex-row justify-between my-2">
-            <Button
-              onPress={() => clearAll()}
-              className="bg-black/10 w-[120px] h-10 rounded-md"
-            >
-              <Text
-                style={{ fontFamily: "Sen_Bold" }}
-                className="text-lg font-semibold text-white text-center"
-              >
-                Clear all
-              </Text>
-            </Button>
-            <Button
-              onPress={() => collapseAll()}
-              className="bg-black/10 w-[120px] h-10 rounded-md"
-            >
-              <Text
-                style={{ fontFamily: "Sen_Bold" }}
-                className="text-l font-semibold text-white text-center"
-              >
-                Collapse all
-              </Text>
-            </Button>
-          </Box>
-
-          <Box
-            style={{ maxHeight: 450 }}
-            className="mb-4 mt-4 bg-black/10 rounded-lg p-4"
-          >
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <CheckboxGroup
-                key={`checkbox-group-${selectedServices.length}-${selectedServices.join(",")}`}
-                value={selectedServices}
-                onChange={(ids) => setSelectedServices(ids as string[])}
-              >
-                {services.map((service) => {
-                  const isExpanded = expandedServices[service.id];
-                  const isSelected = selectedServices.includes(service.id);
-
-                  return (
-                    <Box
-                      key={service.id}
-                      className={`rounded-xl px-4 py-3 my-3 shadow-md ${
-                        isSelected ? "bg-[#369BFF]/80" : "bg-white"
-                      }`}
-                    >
-                      {/* Top Row */}
-                      <Box className="flex-row items-center justify-between">
-                        <Checkbox
-                          value={service.id}
-                          size="md"
-                          // className="bg-transparent"
-                        >
-                          <CheckboxIndicator
-                            className={`mr-2 border-black ${
-                              isSelected ? "bg-black" : "bg-white"
-                            }`}
-                          >
-                            <CheckboxIcon
-                              as={Check}
-                              width={15}
-                              className={
-                                isSelected ? "text-blue-500" : "text-white"
-                              }
-                            />
-                          </CheckboxIndicator>
-
-                          <CheckboxLabel
-                            style={{ fontFamily: "Sen_Bold" }}
-                            className="text-black text-lg bg-transparent"
-                          >
-                            {service.service_name}
-                          </CheckboxLabel>
-                        </Checkbox>
-
-                        {/* Expand / Collapse Button */}
-                        <Button
-                          onPress={() => toggleExpand(service.id)}
-                          className="ml-2 h-8 w-8 bg-transparent"
-                        >
-                          <ButtonIcon
-                            color={isSelected ? "white" : "black"}
-                            as={isExpanded ? ChevronUp : ChevronDown}
-                          />
-                        </Button>
-                      </Box>
-
-                      {/* Expanded Section */}
-                      {isExpanded && (
-                        <Box
-                          className={`mt-2 pt-3 border-t ${isSelected ? "border-white/80" : "border-black/20"}`}
-                        >
-                          <Text
-                            size="md"
-                            style={{ fontFamily: "Sen" }}
-                            className={isSelected ? "text-white" : "text-black"}
-                          >
-                            {service.description}
-                          </Text>
-
-                          <Text
-                            size="md"
-                            style={{ fontFamily: "Sen" }}
-                            className={isSelected ? "text-white" : "text-black"}
-                          >
-                            Duration: {service.duration} {service.duration_type}
-                          </Text>
-                        </Box>
-                      )}
-                    </Box>
-                  );
-                })}
-              </CheckboxGroup>
-            </ScrollView>
-          </Box>
-        </>
-      )}
-    </>
-  );
-
   return (
     <LinearGradient colors={["#1a1a1a", "#000000"]} className="flex-1">
       <SafeAreaView className="flex-1 bg-[#369BFF]/80">
@@ -1276,7 +973,6 @@ export default function SignUpScreen() {
               {step === 2 && renderStepTwo()}
               {step === 3 && renderStepThree()}
               {step === 4 && renderStepFour()}
-              {step === 5 && renderStepFive()}
 
               {error ? (
                 <Box className="bg-white/70 rounded-2xl border border-white/20">
@@ -1306,11 +1002,11 @@ export default function SignUpScreen() {
                       Prev
                     </ButtonText>
                   </Button>
-                  {step < 5 ? (
+                  {step < 4 ? (
                     <Button
                       className={`bg-[#F0F5FA] h-[55px] rounded-[14px] items-center ${"w-[120px]"}`}
                       style={actionButtonShadow}
-                      isDisabled={loading || !isStepValid()}
+                      isDisabled={loading}
                       onPress={handleNextStep}
                       onPressIn={handleButtonPressIn}
                       onPressOut={handleButtonPressOut}
@@ -1327,7 +1023,7 @@ export default function SignUpScreen() {
                     <Button
                       className="bg-[#F0F5FA] h-[55px] w-[120px] rounded-[14px] items-center"
                       style={actionButtonShadow}
-                      isDisabled={loading || !isStepValid()}
+                      isDisabled={loading}
                       onPress={handleSignUp}
                       onPressIn={handleButtonPressIn}
                       onPressOut={handleButtonPressOut}
