@@ -2,7 +2,6 @@ import { Box } from "@/components/ui/box/index";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button/index";
 import {
   Checkbox,
-  CheckboxGroup,
   CheckboxIcon,
   CheckboxIndicator,
   CheckboxLabel,
@@ -162,6 +161,7 @@ export default function SignUpScreen() {
     Record<string, boolean>
   >({});
   const [servicesLoaded, setServicesLoaded] = useState(false);
+  const [resetCounter, setResetCounter] = useState(0);
 
   const toggleExpand = (id: string) => {
     setExpandedServices((prev) => ({
@@ -177,6 +177,7 @@ export default function SignUpScreen() {
   const clearAll = () => {
     setSelectedServices([]);
     setExpandedServices({});
+    setResetCounter((prev) => prev + 1);
   };
 
   // --- ANIMATION VALUE FOR BUTTON PRESS ---
@@ -456,25 +457,32 @@ export default function SignUpScreen() {
       const payload = {
         ...formData,
         years_of_experience: parseInt(formData.years_of_experience, 10) || 0,
+        services: [
+          {
+            service_ids: selectedServices,
+          },
+        ],
       };
 
       const response = await axiosInstance.post("nurses/register", payload);
       const { access_token, refresh_token } = response.data;
+      console.log("hi", access_token);
 
       // Store tokens immediately after first response
       await AsyncStorage.setItem("access_token", access_token);
       await AsyncStorage.setItem("refresh_token", refresh_token);
 
-      await axiosInstance.post("nurses/services", {
-        service_ids: selectedServices,
-      });
-
       Alert.alert("Success!", "Your nurse profile has been created.", [
         { text: "OK", onPress: () => router.push("/(tabs)/profile") },
       ]);
     } catch (e: any) {
+      console.warn(
+        "Registration error details: ",
+        e?.response?.data || e.message,
+      );
       const apiMessage =
         e?.response?.data?.detail ?? e?.response?.data?.message;
+
       const errorMessage = normalizeErrorMessage(
         apiMessage,
         "Registration failed. Please try again.",
@@ -1152,89 +1160,94 @@ export default function SignUpScreen() {
             className="mb-4 mt-4 bg-black/10 rounded-lg p-4"
           >
             <ScrollView showsVerticalScrollIndicator={false}>
-              <CheckboxGroup
-                key={`checkbox-group-${selectedServices.length}-${selectedServices.join(",")}`}
-                value={selectedServices}
-                onChange={(ids) => setSelectedServices(ids as string[])}
-              >
-                {services.map((service) => {
-                  const isExpanded = expandedServices[service.id];
-                  const isSelected = selectedServices.includes(service.id);
+              {services.map((service) => {
+                const isExpanded = expandedServices[service.id];
+                const isSelected = selectedServices.includes(service.id);
 
-                  return (
-                    <Box
-                      key={service.id}
-                      className={`rounded-xl px-4 py-3 my-3 shadow-md ${
-                        isSelected ? "bg-[#369BFF]/80" : "bg-white"
-                      }`}
-                    >
-                      {/* Top Row */}
-                      <Box className="flex-row items-center justify-between">
-                        <Checkbox
-                          value={service.id}
-                          size="md"
-                          // className="bg-transparent"
+                return (
+                  <Box
+                    key={`${service.id}-${resetCounter}`}
+                    className={`rounded-xl px-4 py-3 my-3 shadow-md ${
+                      isSelected ? "bg-[#369BFF]/80" : "bg-white"
+                    }`}
+                  >
+                    {/* Top Row */}
+                    <Box className="flex-row items-center justify-between">
+                      <Checkbox
+                        value={service.id}
+                        size="md"
+                        isChecked={isSelected}
+                        onChange={(checked: boolean) => {
+                          setSelectedServices((prev) => {
+                            if (checked) {
+                              return prev.includes(service.id)
+                                ? prev
+                                : [...prev, service.id];
+                            } else {
+                              return prev.filter((id) => id !== service.id);
+                            }
+                          });
+                        }}
+                      >
+                        <CheckboxIndicator
+                          className={`mr-2 border-black ${
+                            isSelected ? "bg-black" : "bg-white"
+                          }`}
                         >
-                          <CheckboxIndicator
-                            className={`mr-2 border-black ${
-                              isSelected ? "bg-black" : "bg-white"
-                            }`}
-                          >
-                            <CheckboxIcon
-                              as={Check}
-                              width={15}
-                              className={
-                                isSelected ? "text-blue-500" : "text-white"
-                              }
-                            />
-                          </CheckboxIndicator>
-
-                          <CheckboxLabel
-                            style={{ fontFamily: "Sen_Bold" }}
-                            className="text-black text-lg bg-transparent"
-                          >
-                            {service.service_name}
-                          </CheckboxLabel>
-                        </Checkbox>
-
-                        {/* Expand / Collapse Button */}
-                        <Button
-                          onPress={() => toggleExpand(service.id)}
-                          className="ml-2 h-8 w-8 bg-transparent"
-                        >
-                          <ButtonIcon
-                            color={isSelected ? "white" : "black"}
-                            as={isExpanded ? ChevronUp : ChevronDown}
+                          <CheckboxIcon
+                            as={Check}
+                            width={15}
+                            className={
+                              isSelected ? "text-blue-500" : "text-white"
+                            }
                           />
-                        </Button>
-                      </Box>
+                        </CheckboxIndicator>
 
-                      {/* Expanded Section */}
-                      {isExpanded && (
-                        <Box
-                          className={`mt-2 pt-3 border-t ${isSelected ? "border-white/80" : "border-black/20"}`}
+                        <CheckboxLabel
+                          style={{ fontFamily: "Sen_Bold" }}
+                          className="text-black text-lg bg-transparent"
                         >
-                          <Text
-                            size="md"
-                            style={{ fontFamily: "Sen" }}
-                            className={isSelected ? "text-white" : "text-black"}
-                          >
-                            {service.description}
-                          </Text>
+                          {service.service_name}
+                        </CheckboxLabel>
+                      </Checkbox>
 
-                          <Text
-                            size="md"
-                            style={{ fontFamily: "Sen" }}
-                            className={isSelected ? "text-white" : "text-black"}
-                          >
-                            Duration: {service.duration} {service.duration_type}
-                          </Text>
-                        </Box>
-                      )}
+                      {/* Expand / Collapse Button */}
+                      <Button
+                        onPress={() => toggleExpand(service.id)}
+                        className="ml-2 h-8 w-8 bg-transparent"
+                      >
+                        <ButtonIcon
+                          color={isSelected ? "white" : "black"}
+                          as={isExpanded ? ChevronUp : ChevronDown}
+                        />
+                      </Button>
                     </Box>
-                  );
-                })}
-              </CheckboxGroup>
+
+                    {/* Expanded Section */}
+                    {isExpanded && (
+                      <Box
+                        className={`mt-2 pt-3 border-t ${isSelected ? "border-white/80" : "border-black/20"}`}
+                      >
+                        <Text
+                          size="md"
+                          style={{ fontFamily: "Sen" }}
+                          className={isSelected ? "text-white" : "text-black"}
+                        >
+                          {service.description}
+                        </Text>
+
+                        <Text
+                          size="md"
+                          style={{ fontFamily: "Sen" }}
+                          className={isSelected ? "text-white" : "text-black"}
+                        >
+                          Duration: {service.duration} {service.duration_type}
+                        </Text>
+                      </Box>
+                    )}
+                  </Box>
+                );
+              })}
             </ScrollView>
           </Box>
         </>

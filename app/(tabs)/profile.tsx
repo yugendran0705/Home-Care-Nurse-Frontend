@@ -55,7 +55,7 @@ interface Address {
   user_id: string;
 }
 
-interface NurseProfile {
+interface Nurse {
   first_name: string;
   last_name: string;
   phone_number: string;
@@ -72,8 +72,23 @@ interface NurseProfile {
   primary_address: Address;
 }
 
+interface Service {
+  service_name: string;
+  description: string;
+  base_price: string;
+  duration: number;
+  duration_type: number;
+  is_active: boolean;
+  is_qualified: boolean;
+  id: string;
+}
+interface Profile {
+  nurse: Nurse;
+  services: Service[];
+}
+
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<NurseProfile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
@@ -156,7 +171,9 @@ export default function ProfileScreen() {
           <Box className="items-center mb-6">
             <Image
               source={{
-                uri: profile.profile_picture_url || "https://picsum.photos/200",
+                uri:
+                  profile.nurse.profile_picture_url ||
+                  "https://picsum.photos/200",
               }}
               style={{
                 width: 120,
@@ -170,25 +187,25 @@ export default function ProfileScreen() {
             <Text
               style={{ fontFamily: "Sen_Bold" }}
               className="text-[22px] text-white"
-            >{`${profile.first_name} ${profile.last_name}`}</Text>
+            >{`${profile.nurse.first_name} ${profile.nurse.last_name}`}</Text>
             <Text
               style={{ fontFamily: "Sen" }}
               className="text-[16px] text-white/60 mt-1"
             >
-              {profile.user.email}
+              {profile.nurse.user.email}
             </Text>
             <Box className="flex-row items-center gap-1.5 mt-2 bg-[#2A2A2A] py-1 px-2 rounded-[12px]">
               <Icon
-                as={profile.is_verified ? ShieldCheckIcon : ShieldOffIcon}
+                as={profile.nurse.is_verified ? ShieldCheckIcon : ShieldOffIcon}
               />
               <Text
                 style={{
                   fontSize: 16,
-                  color: profile.is_verified ? "#4CD964" : "#FF9500",
+                  color: profile.nurse.is_verified ? "#4CD964" : "#FF9500",
                   fontFamily: "Sen",
                 }}
               >
-                {profile.is_verified ? "Verified" : "Not Verified"}
+                {profile.nurse.is_verified ? "Verified" : "Not Verified"}
               </Text>
             </Box>
           </Box>
@@ -208,7 +225,7 @@ export default function ProfileScreen() {
                   style={{ fontFamily: "Sen" }}
                   className="text-lg text-black"
                 >
-                  {profile.phone_number}
+                  {profile.nurse.phone_number}
                 </Text>
               </Box>
               <Box className="flex-row items-center mb-2 gap-4">
@@ -217,19 +234,19 @@ export default function ProfileScreen() {
                   style={{ fontFamily: "Sen" }}
                   className="text-lg text-black"
                 >
-                  {new Date(profile.date_of_birth).toLocaleDateString()}
+                  {new Date(profile.nurse.date_of_birth).toLocaleDateString()}
                 </Text>
               </Box>
               <Box className="flex-row items-center gap-4">
                 <Icon
-                  as={profile.gender === "Male" ? Mars : Venus}
+                  as={profile.nurse.gender === "Male" ? Mars : Venus}
                   className="text-black"
                 />
                 <Text
                   style={{ fontFamily: "Sen" }}
                   className="text-lg text-black"
                 >
-                  {profile.gender}
+                  {profile.nurse.gender}
                 </Text>
               </Box>
             </VStack>
@@ -248,7 +265,7 @@ export default function ProfileScreen() {
                   style={{ fontFamily: "Sen" }}
                   className="text-lg text-black"
                 >
-                  {profile.years_of_experience} years of experience
+                  {profile.nurse.years_of_experience} years of experience
                 </Text>
               </Box>
               <Box className="flex-row items-center mb-2 gap-4">
@@ -257,7 +274,7 @@ export default function ProfileScreen() {
                   style={{ fontFamily: "Sen" }}
                   className="text-lg text-black"
                 >
-                  License: {profile.license_number}
+                  License: {profile.nurse.license_number}
                 </Text>
               </Box>
               <Box className="flex-row items-center gap-4">
@@ -266,17 +283,17 @@ export default function ProfileScreen() {
                   style={{ fontFamily: "Sen" }}
                   className="text-lg text-black"
                 >
-                  Rating: {profile.average_rating}
+                  Rating: {profile.nurse.average_rating}
                 </Text>
               </Box>
-              {profile.bio ? (
+              {profile.nurse.bio ? (
                 <Box className="flex-row items-center gap-4">
                   <Icon as={UserIcon} className="text-black" />
                   <Text
                     style={{ fontFamily: "Sen" }}
                     className="text-lg text-black"
                   >
-                    {profile.bio}
+                    {profile.nurse.bio}
                   </Text>
                 </Box>
               ) : null}
@@ -296,12 +313,12 @@ export default function ProfileScreen() {
                   style={{ fontFamily: "Sen" }}
                   className="text-lg text-black"
                 >
-                  {profile.primary_address.address_line_1
-                    ? `${profile.primary_address.address_line_1}\n`
+                  {profile.nurse.primary_address.address_line_1
+                    ? `${profile.nurse.primary_address.address_line_1}\n`
                     : ""}
-                  {profile.primary_address.city},{"\n"}
-                  {profile.primary_address.state},{"\n"}
-                  {profile.primary_address.pincode}
+                  {profile.nurse.primary_address.city},{"\n"}
+                  {profile.nurse.primary_address.state},{"\n"}
+                  {profile.nurse.primary_address.pincode}
                 </Text>
               </Box>
             </VStack>

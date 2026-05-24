@@ -142,7 +142,9 @@ export default function SignInScreen() {
         e &&
         e.response &&
         e.response.data &&
-        (e.response.data.message || e.response.data.error);
+        (e.response.data.message ||
+          e.response.data.error ||
+          e.response.data.detail);
       const errorMessage = apiErrorRaw
         ? normalizeErrorMessage(apiErrorRaw)
         : e.message || "Invalid credentials or network error.";
