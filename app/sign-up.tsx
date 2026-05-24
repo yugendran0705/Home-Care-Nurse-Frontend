@@ -466,7 +466,6 @@ export default function SignUpScreen() {
 
       const response = await axiosInstance.post("nurses/register", payload);
       const { access_token, refresh_token } = response.data;
-      console.log("hi", access_token);
 
       // Store tokens immediately after first response
       await AsyncStorage.setItem("access_token", access_token);

@@ -77,7 +77,7 @@ interface Service {
   description: string;
   base_price: string;
   duration: number;
-  duration_type: number;
+  duration_type: string;
   is_active: boolean;
   is_qualified: boolean;
   id: string;
