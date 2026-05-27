@@ -36,6 +36,7 @@ const ServiceScreen = () => {
         const response = await axiosInstance.get(`services/one/${id}`);
 
         setService(response.data);
+        console.log(response.data);
 
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -51,10 +52,83 @@ const ServiceScreen = () => {
       }
     };
 
-    if (id) {
+    if (id && typeof id == "string") {
       fetchServiceData();
     }
   }, [fadeAnim, id]);
+
+  const renderOnError = () => (
+    <>
+      <Text style={{ fontFamily: "Sen_Bold", color: colors.text }} size="5xl">
+        No Data!!
+      </Text>
+    </>
+  );
+
+  const renderDetails = () => (
+    <>
+      <Box className="flex-row mt-10 items-center justify-center relative mb-6">
+        <Text style={{ fontFamily: "Sen_Bold", color: colors.text }} size="5xl">
+          {service?.service_name}
+        </Text>
+      </Box>
+
+      <VStack
+        space="4xl"
+        style={{ backgroundColor: colors.secondaryBackground }}
+        className="p-4 rounded-lg mt-5"
+      >
+        <VStack space="sm">
+          <Text
+            style={{ fontFamily: "Sen_Bold", color: colors.text }}
+            size="2xl"
+          >
+            Description
+          </Text>
+
+          <Text style={{ fontFamily: "Sen", color: colors.text }} size="xl">
+            {service?.description}
+          </Text>
+        </VStack>
+
+        <HStack className="justify-between">
+          <VStack>
+            <Text
+              style={{ fontFamily: "Sen_Bold", color: colors.text }}
+              size="2xl"
+            >
+              Duration
+            </Text>
+
+            <Text
+              style={{ fontFamily: "Sen", color: colors.text }}
+              className="mt-1"
+              size="xl"
+            >
+              {service?.duration} {service?.duration_type}
+            </Text>
+          </VStack>
+
+          <VStack className="items-center">
+            <Text
+              style={{ fontFamily: "Sen_Bold", color: colors.text }}
+              size="2xl"
+            >
+              Base Price
+            </Text>
+
+            <Text
+              style={{ fontFamily: "Sen", color: colors.text }}
+              className="mt-1"
+              size="xl"
+            >
+              {service?.base_price}
+            </Text>
+          </VStack>
+        </HStack>
+      </VStack>
+    </>
+  );
 
   return (
     <SafeAreaProvider>
@@ -66,65 +140,7 @@ const ServiceScreen = () => {
           <Pressable onPress={() => router.back()}>
             <Icon as={ArrowLeft} size="xl" />
           </Pressable>
-          <Box className="flex-row mt-10 items-center justify-center relative mb-6">
-            <Text
-              style={{ fontFamily: "Sen_Bold", color: colors.text }}
-              size="5xl"
-              className="items-center"
-            >
-              {service?.service_name}
-            </Text>
-          </Box>
-
-          <VStack
-            space="4xl"
-            style={{ backgroundColor: colors.secondaryBackground }}
-            className="p-4 rounded-lg mt-5"
-          >
-            <VStack space="sm">
-              <Text
-                style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                size="2xl"
-              >
-                Description
-              </Text>
-              <Text style={{ fontFamily: "Sen", color: colors.text }} size="xl">
-                {service?.description}
-              </Text>
-            </VStack>
-            <HStack className="justify-between">
-              <VStack>
-                <Text
-                  style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                  size="2xl"
-                >
-                  Duration
-                </Text>
-                <Text
-                  style={{ fontFamily: "Sen", color: colors.text }}
-                  className="mt-1"
-                  size="xl"
-                >
-                  {service?.duration} {service?.duration_type}
-                </Text>
-              </VStack>
-              <VStack className="items-center">
-                <Text
-                  style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                  size="2xl"
-                >
-                  Base Price
-                </Text>
-                <Text
-                  style={{ fontFamily: "Sen", color: colors.text }}
-                  className="mt-1"
-                  size="xl"
-                >
-                  {service?.base_price}
-                </Text>
-              </VStack>
-            </HStack>
-          </VStack>
+          {service ? renderDetails() : renderOnError()}
         </Animated.View>
       </SafeAreaView>
     </SafeAreaProvider>

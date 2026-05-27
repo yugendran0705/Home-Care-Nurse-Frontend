@@ -130,6 +130,12 @@ export default function SignInScreen() {
     setIsLoading(true);
 
     try {
+      if (urlData.apiConfigurationError || !urlData.apiUrl) {
+        throw new Error(
+          urlData.apiConfigurationError ||
+            "Service is down, please try again later.",
+        );
+      }
       const response = await axios.post(`${urlData.apiUrl}users/login`, {
         email: credentials.email.trim(),
         password: credentials.password.trim(),

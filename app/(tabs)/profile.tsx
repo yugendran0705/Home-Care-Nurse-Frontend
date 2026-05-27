@@ -357,7 +357,7 @@ export default function ProfileScreen() {
           style={{ fontFamily: "Sen_Bold", color: colors.text }}
           className="text-[18px]"
         >
-          Primary Address
+          Addresses
         </Text>
         <Pressable
           className="p-1 rounded-lg"
