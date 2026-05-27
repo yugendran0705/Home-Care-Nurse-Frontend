@@ -45,6 +45,18 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" options={{ headerShown: false }} />
           <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="manage-addresses"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="edit-personal-details"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="edit-services" options={{ headerShown: false }} />
+          <Stack.Screen name="address-form" options={{ headerShown: false }} />
+
+          <Stack.Screen name="service-page" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

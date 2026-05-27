@@ -87,13 +87,7 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
 
     // Check if the error is 401 (Unauthorized) and it's not a retry request
-    // Skip token refresh for login requests
-    const isAuthRequest = originalRequest.url?.includes("users/login");
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !isAuthRequest
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // Mark it as a retry to prevent infinite loops
 
       try {
