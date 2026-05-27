@@ -69,7 +69,7 @@ const AddressFormScreen = () => {
       if (isEditMode) {
         try {
           const response = await axiosInstance.get(
-            `/addresses/one/${addressId}`,
+            `addresses/one/${addressId}`,
           );
           setAddress(response.data);
         } catch {
@@ -158,7 +158,7 @@ const AddressFormScreen = () => {
           setLoading(true);
           try {
             if (isEditMode) {
-              await axiosInstance.put(`/addresses/${addressId}`, address);
+              await axiosInstance.put(`addresses/${addressId}`, address);
               Alert.alert("Success", "Address updated successfully.");
             } else {
               await axiosInstance.post("/addresses", address);
@@ -189,7 +189,7 @@ const AddressFormScreen = () => {
           onPress: async () => {
             setLoading(true);
             try {
-              await axiosInstance.delete(`/addresses/${addressId}`);
+              await axiosInstance.delete(`addresses/${addressId}`);
               Alert.alert("Success", "Address deleted successfully.");
               router.back();
             } catch (error: any) {

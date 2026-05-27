@@ -36,8 +36,6 @@ const ServiceScreen = () => {
         const response = await axiosInstance.get(`services/one/${id}`);
 
         setService(response.data);
-        console.log(response.data);
-
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 500,

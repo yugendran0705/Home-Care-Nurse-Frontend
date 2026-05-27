@@ -1221,10 +1221,7 @@ export default function SignUpScreen() {
                           });
                         }}
                       >
-                        <CheckboxIndicator
-                          className="mr-2"
-                          style={{ backgroundColor: colors.text }}
-                        >
+                        <CheckboxIndicator className="mr-2">
                           <CheckboxIcon
                             as={Check}
                             width={15}

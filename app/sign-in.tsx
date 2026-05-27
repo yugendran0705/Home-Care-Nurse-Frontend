@@ -136,7 +136,10 @@ export default function SignInScreen() {
             "Service is down, please try again later.",
         );
       }
-      const response = await axios.post(`${urlData.apiUrl}users/login`, {
+
+      const normalizedApiUrl = urlData.apiUrl.replace(/\/+$/, "");
+      const loginUrl = `${normalizedApiUrl}/users/login`;
+      const response = await axios.post(loginUrl, {
         email: credentials.email.trim(),
         password: credentials.password.trim(),
       });

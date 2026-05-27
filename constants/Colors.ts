@@ -10,10 +10,16 @@ export const Colors = {
     tint: tintColorLight,
 
     // Backgrounds
-    background: "#5A189A", // Standard black background
-    secondaryBackground: "#9D4EDD", // Deep gray for gradients
+    background: "#5A189A",
+    secondaryBackground: "#9D4EDD",
     secondaryBackgroundGradient: "#9d4edd8e",
 
+    // Semantics
+    error: "#EF4444", // Tailwind red-500
+    success: "#4CD964", // Verified green
+    warning: "#FF9500", // Unverified orange
+
+    // not used
     // Surfaces (Inputs, Cards)
     surface: "#F0F5FA", // Input backgrounds & light cards
     surfaceSecondary: "#FFFFFF", // Pure white forms
@@ -31,10 +37,6 @@ export const Colors = {
     tabIconSelected: tintColorLight,
 
     cursorColor: "#000000",
-    // Semantics
-    error: "#EF4444", // Tailwind red-500
-    success: "#4CD964", // Verified green
-    warning: "#FF9500", // Unverified orange
   },
 
   dark: {
@@ -49,6 +51,11 @@ export const Colors = {
     // Card
     secondaryBackground: "#9D4EDD",
     secondaryBackgroundGradient: "#b374e6",
+
+    // Semantics
+    error: "#e26767",
+    success: "#4CD964",
+    warning: "#FF9500",
 
     // not used
     // Surfaces (Inputs, Cards)
@@ -66,11 +73,6 @@ export const Colors = {
     tabIconSelected: tintColorDark,
 
     cursorColor: "#ffffff",
-
-    // Semantics
-    error: "#e26767",
-    success: "#4CD964",
-    warning: "#FF9500",
 
     inputBackground: "#F0F5FA",
   },

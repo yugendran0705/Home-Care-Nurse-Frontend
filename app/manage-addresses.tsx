@@ -39,7 +39,7 @@ const ManageAddressesScreen = () => {
 
   const loadData = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/addresses/me");
+      const response = await axiosInstance.get("addresses/me");
       setAddresses([...response.data].reverse());
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -76,7 +76,7 @@ const ManageAddressesScreen = () => {
           onPress: async () => {
             setLoading(true);
             try {
-              await axiosInstance.patch(`/addresses/set_primary/${addressId}`);
+              await axiosInstance.patch(`addresses/set_primary/${addressId}`);
               Alert.alert("Success", "Primary address updated.");
               await loadData();
             } catch (error: any) {
