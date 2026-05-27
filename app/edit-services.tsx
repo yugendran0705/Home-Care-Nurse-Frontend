@@ -191,7 +191,9 @@ const EditServicesScreen = () => {
                   <Button
                     onPress={() => clearAll()}
                     className="bg-black/10 w-[120px] h-10 rounded-md active:opacity-70"
-                    style={{ backgroundColor: colors.secondaryBackground }}
+                    style={{
+                      backgroundColor: colors.secondaryBackgroundGradient,
+                    }}
                   >
                     <Text
                       style={{ fontFamily: "Sen_Bold", color: colors.text }}
@@ -203,7 +205,9 @@ const EditServicesScreen = () => {
                   <Button
                     onPress={() => collapseAll()}
                     className="bg-black/10 w-[120px] h-10 rounded-md active:opacity-70"
-                    style={{ backgroundColor: colors.secondaryBackground }}
+                    style={{
+                      backgroundColor: colors.secondaryBackgroundGradient,
+                    }}
                   >
                     <Text
                       style={{ fontFamily: "Sen_Bold", color: colors.text }}
@@ -264,10 +268,10 @@ const EditServicesScreen = () => {
                                 <CheckboxIcon
                                   as={Check}
                                   width={15}
-                                  className={
+                                  color={
                                     isSelected
                                       ? colors.secondaryBackground
-                                      : "text-white"
+                                      : "white"
                                   }
                                 />
                               </CheckboxIndicator>
@@ -338,7 +342,9 @@ const EditServicesScreen = () => {
             )}
             <Button
               onPress={handleSave}
-              style={{ backgroundColor: colors.secondaryBackground }}
+              style={{
+                backgroundColor: colors.secondaryBackgroundGradient,
+              }}
               className=" h-16 rounded-[14px] items-center shadow-lg active:opacity-70"
             >
               {loading ? (

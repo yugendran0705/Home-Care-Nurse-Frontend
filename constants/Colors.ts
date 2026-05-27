@@ -45,10 +45,12 @@ export const Colors = {
     tint: tintColorDark,
 
     // Backgrounds
-    background: "#5A189A", // Standard black background
+    background: "#5A189A",
+    // Card
     secondaryBackground: "#9D4EDD",
-    secondaryBackgroundGradient: "#b374e6", // Deep gray for gradients
+    secondaryBackgroundGradient: "#b374e6",
 
+    // not used
     // Surfaces (Inputs, Cards)
     surface: "#2A2A2A", // Dark mode cards/badges
     surfaceSecondary: "#1A1A1A", // Darker surface

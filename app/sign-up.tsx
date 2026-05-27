@@ -37,7 +37,7 @@ import {
   Mars,
   Venus,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -121,7 +121,7 @@ export default function SignUpScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
   const actionButtonShadow = {
-    backgroundColor: colors.secondaryBackground,
+    backgroundColor: colors.secondaryBackgroundGradient,
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -167,6 +167,19 @@ export default function SignUpScreen() {
   >({});
   const [servicesLoaded, setServicesLoaded] = useState(false);
   const [resetCounter, setResetCounter] = useState(0);
+
+  const sortedServices = useMemo(() => {
+    const selectedSet = new Set(selectedServices);
+
+    return [...services].sort((a, b) => {
+      const aSelected = selectedSet.has(a.id);
+      const bSelected = selectedSet.has(b.id);
+
+      if (aSelected === bSelected) return 0;
+
+      return aSelected ? -1 : 1;
+    });
+  }, [services, selectedServices]);
 
   const toggleExpand = (id: string) => {
     setExpandedServices((prev) => ({
@@ -533,7 +546,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: Dhruva"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -565,7 +578,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: U R"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -597,7 +610,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: example@gmail.com"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -630,7 +643,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             type={isPasswordVisible ? "text" : "password"}
             placeholder="eg: ********"
             placeholderTextColor={colors.text}
@@ -785,7 +798,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: RN-2026-001"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -817,7 +830,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: 5"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -852,7 +865,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: https://..."
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -887,7 +900,11 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", textAlignVertical: "top" }}
+            style={{
+              fontFamily: "Sen",
+              textAlignVertical: "top",
+              color: colors.text,
+            }}
             className="mt-4"
             placeholder="Write a short bio (optional)"
             placeholderTextColor={colors.text}
@@ -963,7 +980,7 @@ export default function SignUpScreen() {
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.35,
           shadowRadius: 4,
-          backgroundColor: colors.secondaryBackground,
+          backgroundColor: colors.secondaryBackgroundGradient,
         }}
         className="h-[55px] rounded-[14px] items-center justify-center mt-[10px]"
         onPress={handleConfirmLocationAndGeocode}
@@ -1013,7 +1030,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: 221B Baker Street"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -1045,7 +1062,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: Mumbai"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -1077,7 +1094,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: Maharashtra"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -1109,7 +1126,7 @@ export default function SignUpScreen() {
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen" }}
+            style={{ fontFamily: "Sen", color: colors.text }}
             placeholder="eg: 400001"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -1140,7 +1157,7 @@ export default function SignUpScreen() {
             <Button
               onPress={() => clearAll()}
               className="bg-black/10 w-[120px] h-10 rounded-md active:opacity-70"
-              style={{ backgroundColor: colors.secondaryBackground }}
+              style={{ backgroundColor: colors.secondaryBackgroundGradient }}
             >
               <Text
                 style={{ fontFamily: "Sen_Bold", color: colors.text }}
@@ -1152,7 +1169,7 @@ export default function SignUpScreen() {
             <Button
               onPress={() => collapseAll()}
               className="bg-black/10 w-[120px] h-10 rounded-md active:opacity-70"
-              style={{ backgroundColor: colors.secondaryBackground }}
+              style={{ backgroundColor: colors.secondaryBackgroundGradient }}
             >
               <Text
                 style={{ fontFamily: "Sen_Bold", color: colors.text }}
@@ -1171,7 +1188,7 @@ export default function SignUpScreen() {
             className="mb-4 mt-2 rounded-lg p-4"
           >
             <ScrollView showsVerticalScrollIndicator={false}>
-              {services.map((service) => {
+              {sortedServices.map((service) => {
                 const isExpanded = expandedServices[service.id];
                 const isSelected = selectedServices.includes(service.id);
 
@@ -1211,10 +1228,8 @@ export default function SignUpScreen() {
                           <CheckboxIcon
                             as={Check}
                             width={15}
-                            className={
-                              isSelected
-                                ? colors.secondaryBackground
-                                : "text-white"
+                            color={
+                              isSelected ? colors.secondaryBackground : "white"
                             }
                           />
                         </CheckboxIndicator>
@@ -1325,8 +1340,8 @@ export default function SignUpScreen() {
               {error ? (
                 <Box className="bg-white/70 rounded-2xl border border-white/20">
                   <Text
-                    style={{ fontFamily: "Sen" }}
-                    className="text-red-500 text-center my-[10px] text-[14px]"
+                    style={{ fontFamily: "Sen", color: colors.error }}
+                    className=" text-center my-[10px] text-[14px]"
                   >
                     {error}
                   </Text>

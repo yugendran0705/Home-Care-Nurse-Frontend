@@ -246,7 +246,9 @@ const AddressFormScreen = () => {
         onPress={handleConfirmLocation}
         className="absolute bottom-5 left-5 right-5  py-[15px] h-fit rounded-[14px] items-center"
         isDisabled={isGeocoding}
-        style={{ backgroundColor: colors.secondaryBackground }}
+        style={{
+          backgroundColor: colors.secondaryBackgroundGradient,
+        }}
       >
         {isGeocoding ? (
           <ButtonSpinner color="black" />
@@ -464,7 +466,9 @@ const AddressFormScreen = () => {
             onPress={handleSave}
             className="rounded-xl h-full flex-1 active:opacity-70"
             isDisabled={loading}
-            style={{ backgroundColor: colors.secondaryBackground }}
+            style={{
+              backgroundColor: colors.secondaryBackgroundGradient,
+            }}
           >
             {loading ? (
               <ButtonSpinner color="black" />

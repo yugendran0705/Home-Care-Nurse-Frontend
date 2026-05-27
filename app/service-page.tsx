@@ -43,7 +43,11 @@ const ServiceScreen = () => {
           useNativeDriver: true,
         }).start();
       } catch (error: any) {
-        Alert.alert("Failure", error.response.data.detail);
+        Alert.alert(
+          "Failure",
+          error?.response?.data?.detail ??
+            "Something went wrong. Please try again.",
+        );
       }
     };
 

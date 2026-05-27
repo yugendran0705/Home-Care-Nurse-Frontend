@@ -80,7 +80,11 @@ const ManageAddressesScreen = () => {
               Alert.alert("Success", "Primary address updated.");
               await loadData();
             } catch (error: any) {
-              Alert.alert("Error", error.response.data.detail);
+              Alert.alert(
+                "Error",
+                error?.response?.data?.detail ??
+                  "Failed to update primary address.",
+              );
             } finally {
               setLoading(false);
             }
@@ -209,7 +213,9 @@ const ManageAddressesScreen = () => {
 
             <Button
               className="flex-row py-[15px] rounded-[14px] items-center justify-center mt-[10px] h-auto active:opacity-70"
-              style={{ backgroundColor: colors.secondaryBackground }}
+              style={{
+                backgroundColor: colors.secondaryBackgroundGradient,
+              }}
               onPress={() => router.push("/address-form")}
             >
               <ButtonIcon as={Plus} className="mr-[10px]" color={colors.text} />

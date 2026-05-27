@@ -130,7 +130,7 @@ export default function SignInScreen() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${urlData?.apiUrl}users/login`, {
+      const response = await axios.post(`${urlData.apiUrl}users/login`, {
         email: credentials.email.trim(),
         password: credentials.password.trim(),
       });
@@ -224,8 +224,7 @@ export default function SignInScreen() {
                         />
                       </InputSlot>
                       <InputField
-                        style={{ fontFamily: "Sen" }}
-                        className="text-black"
+                        style={{ fontFamily: "Sen", color: colors.text }}
                         placeholder="example@gmail.com"
                         value={credentials.email}
                         onChangeText={(text) => handleChange("email", text)}
@@ -255,8 +254,7 @@ export default function SignInScreen() {
                         />
                       </InputSlot>
                       <InputField
-                        style={{ fontFamily: "Sen" }}
-                        className="text-black"
+                        style={{ fontFamily: "Sen", color: colors.text }}
                         type={isPasswordVisible ? "text" : "password"}
                         placeholder="********"
                         value={credentials.password}
@@ -293,7 +291,9 @@ export default function SignInScreen() {
 
                   <Button
                     className="w-full rounded-xl h-14 mt-2 active:opacity-70"
-                    style={{ backgroundColor: colors.background }}
+                    style={{
+                      backgroundColor: colors.secondaryBackgroundGradient,
+                    }}
                     onPress={() => {
                       handleSignIn();
                     }}

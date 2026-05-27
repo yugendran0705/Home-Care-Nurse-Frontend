@@ -346,7 +346,7 @@ export default function ProfileScreen() {
     </VStack>
   );
 
-  const renderPrimaryAddress = () => (
+  const renderAddresses = () => (
     <VStack
       space="lg"
       style={{ backgroundColor: colors.secondaryBackground }}
@@ -473,7 +473,7 @@ export default function ProfileScreen() {
             {renderPersonalInfo()}
             {renderProfessionalDetails()}
             {renderServices()}
-            {renderPrimaryAddress()}
+            {renderAddresses()}
           </Box>
 
           <Button

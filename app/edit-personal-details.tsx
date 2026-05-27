@@ -67,8 +67,8 @@ const EditPersonalDetailsScreen = () => {
         };
         setDetails(fetchedDetails);
 
-        if (response.data.date_of_birth) {
-          setDate(new Date(response.data.date_of_birth));
+        if (fetchedDetails.date_of_birth) {
+          setDate(new Date(fetchedDetails.date_of_birth));
         }
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -345,7 +345,9 @@ const EditPersonalDetailsScreen = () => {
             ) : null}
             <Button
               onPress={handleSave}
-              style={{ backgroundColor: colors.secondaryBackground }}
+              style={{
+                backgroundColor: colors.secondaryBackgroundGradient,
+              }}
               className=" h-16 rounded-[14px] items-center shadow-lg active:opacity-70"
               isDisabled={loading}
             >
