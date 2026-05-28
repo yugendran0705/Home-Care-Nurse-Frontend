@@ -24,7 +24,9 @@ import {
 } from "@/components/ui/input/index";
 import { Text } from "@/components/ui/text/index";
 import { VStack } from "@/components/ui/vstack/index";
+import { Colors } from "@/constants/Colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -33,6 +35,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  useColorScheme,
 } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -41,9 +44,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import axiosInstance from "../axiosInstance";
+import urlData from "../config.js";
 
 export default function SignInScreen() {
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
   const router = useRouter();
   const [credentials, setCredentials] = useState({
     email: "",
@@ -114,7 +119,6 @@ export default function SignInScreen() {
   const handleSignIn = async () => {
     if (isLoading) return;
     setError("");
-
     const email = credentials.email.trim();
     const password = credentials.password.trim();
 
@@ -126,7 +130,16 @@ export default function SignInScreen() {
     setIsLoading(true);
 
     try {
-      const response = await axiosInstance.post("users/login", {
+      if (urlData.apiConfigurationError || !urlData.apiUrl) {
+        throw new Error(
+          urlData.apiConfigurationError ||
+            "Service is down, please try again later.",
+        );
+      }
+
+      const normalizedApiUrl = urlData.apiUrl.replace(/\/+$/, "");
+      const loginUrl = `${normalizedApiUrl}/users/login`;
+      const response = await axios.post(loginUrl, {
         email: credentials.email.trim(),
         password: credentials.password.trim(),
       });
@@ -142,7 +155,9 @@ export default function SignInScreen() {
         e &&
         e.response &&
         e.response.data &&
-        (e.response.data.message || e.response.data.error);
+        (e.response.data.message ||
+          e.response.data.error ||
+          e.response.data.detail);
       const errorMessage = apiErrorRaw
         ? normalizeErrorMessage(apiErrorRaw)
         : e.message || "Invalid credentials or network error.";
@@ -155,7 +170,10 @@ export default function SignInScreen() {
 
   return (
     <LinearGradient colors={["#1a1a1a", "#000000"]} className="flex-1">
-      <SafeAreaView className="flex-1 bg-[#369BFF]/80">
+      <SafeAreaView
+        className="flex-1 "
+        style={{ backgroundColor: colors.background }}
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
@@ -178,8 +196,8 @@ export default function SignInScreen() {
                 </Box>
                 <Box>
                   <Text
-                    style={{ fontFamily: "Sen" }}
-                    className="text-[18px] text-white/70 font-Sen mt-[20px] mb-[20px] w-full text-center"
+                    style={{ fontFamily: "Sen", color: colors.text }}
+                    className="text-[18px] font-Sen mt-[20px] mb-[20px] w-full text-center"
                   >
                     Sign in to manage your bookings
                   </Text>
@@ -191,63 +209,74 @@ export default function SignInScreen() {
               >
                 <VStack
                   space="lg"
-                  className="bg-white w-full mt-5 px-8 py-10 rounded-3xl items-center"
+                  style={{ backgroundColor: colors.secondaryBackground }}
+                  className=" w-full mt-5 px-8 py-10 rounded-3xl items-center"
                 >
                   <FormControl size="lg" className="w-full text-red-500">
                     <FormControlLabel>
                       <FormControlLabelText
-                        style={{ fontFamily: "Sen" }}
-                        className="text-gray-800 uppercase leading-10 font-Sen"
+                        style={{ fontFamily: "Sen", color: colors.text }}
+                        className=" uppercase leading-10 font-Sen"
                       >
                         email
                       </FormControlLabelText>
                     </FormControlLabel>
                     <Input
-                      className="my-1 rounded-xl h-14 bg-[#F0F5FA] pl-4 border-0"
+                      className="my-1 rounded-xl h-14 pl-4 border-0"
                       size="md"
+                      style={{ backgroundColor: colors.background }}
                     >
                       <InputSlot>
-                        <InputIcon as={MailIcon} />
+                        <InputIcon
+                          style={{ color: colors.text }}
+                          as={MailIcon}
+                        />
                       </InputSlot>
                       <InputField
-                        style={{ fontFamily: "Sen" }}
-                        className="text-black"
+                        style={{ fontFamily: "Sen", color: colors.text }}
                         placeholder="example@gmail.com"
                         value={credentials.email}
                         onChangeText={(text) => handleChange("email", text)}
-                        cursorColor="black"
+                        cursorColor={colors.text}
+                        placeholderTextColor={colors.text}
                       />
                     </Input>
                   </FormControl>
                   <FormControl size="lg" className="w-full" isRequired={false}>
                     <FormControlLabel>
                       <FormControlLabelText
-                        style={{ fontFamily: "Sen" }}
-                        className="text-gray-800 uppercase leading-10 font-Sen"
+                        style={{ fontFamily: "Sen", color: colors.text }}
+                        className=" uppercase leading-10 font-Sen"
                       >
                         PASSWORD
                       </FormControlLabelText>
                     </FormControlLabel>
                     <Input
-                      className="my-1 rounded-xl h-14 bg-[#F0F5FA] pl-4 pr-4 border-0"
+                      className="my-1 rounded-xl h-14 pl-4 border-0"
                       size="md"
+                      style={{ backgroundColor: colors.background }}
                     >
                       <InputSlot>
-                        <InputIcon as={LockIcon} />
+                        <InputIcon
+                          style={{ color: colors.text }}
+                          as={LockIcon}
+                        />
                       </InputSlot>
                       <InputField
-                        style={{ fontFamily: "Sen" }}
-                        className="text-black"
+                        style={{ fontFamily: "Sen", color: colors.text }}
                         type={isPasswordVisible ? "text" : "password"}
                         placeholder="********"
                         value={credentials.password}
                         onChangeText={(text) => handleChange("password", text)}
-                        cursorColor="black"
+                        cursorColor={colors.text}
+                        placeholderTextColor={colors.text}
                       />
                       <InputSlot
                         onPress={() => setIsPasswordVisible(!isPasswordVisible)}
                       >
                         <InputIcon
+                          className="mr-2"
+                          style={{ color: colors.text }}
                           as={isPasswordVisible ? EyeIcon : EyeOffIcon}
                         />
                       </InputSlot>
@@ -264,16 +293,16 @@ export default function SignInScreen() {
                     </Box>
                   )}
                   <Link href="https://gluestack.io/" className="ml-auto">
-                    <Text
-                      style={{ fontFamily: "Sen" }}
-                      className="text-[#369BFF]"
-                    >
+                    <Text style={{ fontFamily: "Sen", color: colors.text }}>
                       Forgot Password?
                     </Text>
                   </Link>
 
                   <Button
-                    className="w-full bg-[#369BFF] rounded-xl h-14 mt-2"
+                    className="w-full rounded-xl h-14 mt-2 active:opacity-70"
+                    style={{
+                      backgroundColor: colors.secondaryBackgroundGradient,
+                    }}
                     onPress={() => {
                       handleSignIn();
                     }}
@@ -281,24 +310,19 @@ export default function SignInScreen() {
                   >
                     {isLoading && <ButtonSpinner />}
                     <ButtonText
-                      style={{ fontFamily: "Sen_Bold" }}
-                      className="text-white"
+                      style={{ fontFamily: "Sen_Bold", color: colors.text }}
                     >
                       SIGN IN
                     </ButtonText>
                   </Button>
                   <Animated.View style={footerAnimatedStyle}>
                     <Box className="flex-row mt-4">
-                      <Text
-                        style={{ fontFamily: "Sen" }}
-                        className="text-[#646982]"
-                      >
+                      <Text style={{ fontFamily: "Sen", color: colors.text }}>
                         Don&apos;t have an account?
                       </Text>
                       <Link href="./sign-up" asChild className="ml-2">
                         <Text
-                          style={{ fontFamily: "Sen_Bold" }}
-                          className="text-[#369BFF]"
+                          style={{ fontFamily: "Sen_Bold", color: colors.text }}
                         >
                           SIGN UP
                         </Text>
