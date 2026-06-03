@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/checkbox";
 import { Icon } from "@/components/ui/icon";
 import { Colors } from "@/constants/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ArrowLeft, Check, ChevronDown, ChevronUp } from "lucide-react-native";
 
 interface Service {
@@ -48,6 +49,9 @@ const EditServicesScreen = () => {
   const fadeAnim = useState(new Animated.Value(0))[0];
   const [services, setServices] = useState<Service[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [initialSelectedServices, setInitialSelectedServices] = useState<
+    string[]
+  >([]);
   const [expandedServices, setExpandedServices] = useState<
     Record<string, boolean>
   >({});
@@ -86,12 +90,14 @@ const EditServicesScreen = () => {
   useEffect(() => {
     const fetchCurrentServices = async () => {
       try {
-        const response = await axiosInstance.get("nurses/me");
-        if (response.data.services) {
-          const serviceIds = response.data.services.map(
-            (s: { id: string }) => s.id,
-          );
+        const cachedProfile = await AsyncStorage.getItem("profile");
+        const data = cachedProfile
+          ? JSON.parse(cachedProfile)
+          : (await axiosInstance.get("nurses/me")).data;
+        if (data.services) {
+          const serviceIds = data.services.map((s: { id: string }) => s.id);
           setSelectedServices(serviceIds);
+          setInitialSelectedServices(serviceIds);
         }
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -99,7 +105,10 @@ const EditServicesScreen = () => {
           useNativeDriver: true,
         }).start();
       } catch (e: any) {
-        Alert.alert("Error", e.response.data.detail);
+        Alert.alert(
+          "Error",
+          e?.response?.data?.detail ?? "Could not fetch your details.",
+        );
         router.back();
       } finally {
         setLoading(false);
@@ -108,7 +117,7 @@ const EditServicesScreen = () => {
 
     const getServices = async () => {
       try {
-        const response = await axiosInstance.get("services/all");
+        const response = await axiosInstance.get("nursing_services/all");
         const activeServices = response.data.filter(
           (service: { is_active: boolean }) => service.is_active,
         );
@@ -124,6 +133,14 @@ const EditServicesScreen = () => {
     getServices();
   }, [fadeAnim]);
 
+  const areEqual = (a: string[], b: string[]) => {
+    if (a.length !== b.length) return false;
+
+    const setB = new Set(b);
+
+    return a.every((id: string) => setB.has(id));
+  };
+
   const handleSave = async () => {
     Alert.alert("Update Services", "Are you sure you want to save this?", [
       { text: "Cancel", style: "cancel" },
@@ -135,9 +152,16 @@ const EditServicesScreen = () => {
           setLoading(true);
           try {
             if (selectedServices.length > 0) {
-              await axiosInstance.put("nurses/services", {
-                service_ids: selectedServices,
-              });
+              if (!areEqual(selectedServices, initialSelectedServices)) {
+                await axiosInstance.put("nurses/services", {
+                  service_ids: selectedServices,
+                });
+                const response = await axiosInstance.get("nurses/me");
+                await AsyncStorage.setItem(
+                  "profile",
+                  JSON.stringify(response.data),
+                );
+              }
             } else {
               Alert.alert("Failure", "Atleast choose one service.");
               return;
@@ -145,7 +169,10 @@ const EditServicesScreen = () => {
             Alert.alert("Success", "Your services have been updated.");
             router.back();
           } catch (error: any) {
-            Alert.alert("Error", error.response.data.detail);
+            Alert.alert(
+              "Error",
+              error?.response?.data?.detail ?? "Could not update your details.",
+            );
           } finally {
             setLoading(false);
           }

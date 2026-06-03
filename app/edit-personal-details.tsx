@@ -31,6 +31,7 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { Colors } from "@/constants/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ArrowLeft, Mars, Venus } from "lucide-react-native";
 
 interface PersonalDetails {
@@ -46,6 +47,9 @@ const EditPersonalDetailsScreen = () => {
   const colors = Colors[colorScheme];
 
   const [details, setDetails] = useState<PersonalDetails | null>(null);
+  const [initialDetails, setInitialDetails] = useState<PersonalDetails | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const fadeAnim = useState(new Animated.Value(0))[0];
@@ -57,15 +61,19 @@ const EditPersonalDetailsScreen = () => {
   useEffect(() => {
     const fetchCurrentDetails = async () => {
       try {
-        const response = await axiosInstance.get("nurses/me");
+        const cachedProfile = await AsyncStorage.getItem("profile");
+        const data = cachedProfile
+          ? JSON.parse(cachedProfile)
+          : (await axiosInstance.get("nurses/me")).data;
         const fetchedDetails = {
-          first_name: response.data.nurse.first_name,
-          last_name: response.data.nurse.last_name,
-          phone_number: response.data.nurse.phone_number,
-          date_of_birth: response.data.nurse.date_of_birth,
-          gender: response.data.nurse.gender,
+          first_name: data.nurse.first_name,
+          last_name: data.nurse.last_name,
+          phone_number: data.nurse.phone_number,
+          date_of_birth: data.nurse.date_of_birth,
+          gender: data.nurse.gender,
         };
         setDetails(fetchedDetails);
+        setInitialDetails(fetchedDetails);
 
         if (fetchedDetails.date_of_birth) {
           setDate(new Date(fetchedDetails.date_of_birth));
@@ -76,7 +84,10 @@ const EditPersonalDetailsScreen = () => {
           useNativeDriver: true,
         }).start();
       } catch (e: any) {
-        Alert.alert("Error", e?.response?.data.detail);
+        Alert.alert(
+          "Error",
+          e?.response?.data?.detail ?? "Could not fetch your details.",
+        );
         router.back();
       } finally {
         setLoading(false);
@@ -100,10 +111,10 @@ const EditPersonalDetailsScreen = () => {
 
   const handleSave = async () => {
     if (
-      !details?.date_of_birth &&
-      !details?.first_name &&
-      !details?.gender &&
-      !details?.last_name &&
+      !details?.date_of_birth ||
+      !details?.first_name ||
+      !details?.gender ||
+      !details?.last_name ||
       !details?.phone_number
     ) {
       setError("Please enter any one of the fields!");
@@ -116,16 +127,29 @@ const EditPersonalDetailsScreen = () => {
         { text: "Cancel", style: "cancel" },
         {
           text: "Save",
-          style: "destructive",
+          style: "default",
 
           onPress: async () => {
             setLoading(true);
             try {
+              if (JSON.stringify(details) === JSON.stringify(initialDetails)) {
+                router.back();
+                return;
+              }
               await axiosInstance.put("nurses/me", details);
+              const response = await axiosInstance.get("nurses/me");
+              await AsyncStorage.setItem(
+                "profile",
+                JSON.stringify(response.data),
+              );
               Alert.alert("Success", "Your details have been updated.");
               router.back();
             } catch (error: any) {
-              Alert.alert("Error", error.response.data.detail);
+              Alert.alert(
+                "Error",
+                error?.response?.data?.detail ??
+                  "Could not update your details.",
+              );
             } finally {
               setLoading(false);
             }
@@ -138,7 +162,7 @@ const EditPersonalDetailsScreen = () => {
   if (loading || !details) {
     return (
       <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#4c8bf5" />
+        <ActivityIndicator size="large" color={colors.text} />
       </Box>
     );
   }
@@ -155,7 +179,7 @@ const EditPersonalDetailsScreen = () => {
               <Icon as={ArrowLeft} size="xl" />
             </Pressable>
             <Text
-              className="text-2xl font-semibold"
+              className="text-2xl"
               style={{ fontFamily: "Sen_Bold", color: colors.text }}
             >
               Edit Personal Details
@@ -184,12 +208,12 @@ const EditPersonalDetailsScreen = () => {
                 size="md"
               >
                 <InputField
-                  cursorColor={colors.cursorColor}
+                  cursorColor={colors.textSecondary}
                   style={{ color: colors.text, fontFamily: "Sen" }}
                   value={details.first_name}
                   onChangeText={(v) => handleDetailsChange("first_name", v)}
                   placeholder="Enter firstname"
-                  placeholderTextColor={"white"}
+                  placeholderTextColor={colors.textSecondary}
                 />
               </Input>
             </FormControl>
@@ -215,12 +239,12 @@ const EditPersonalDetailsScreen = () => {
                 size="md"
               >
                 <InputField
-                  cursorColor={colors.cursorColor}
+                  cursorColor={colors.textSecondary}
                   style={{ color: colors.text, fontFamily: "Sen" }}
                   value={details.last_name}
                   onChangeText={(v) => handleDetailsChange("last_name", v)}
                   placeholder="Enter lastname"
-                  placeholderTextColor={"white"}
+                  placeholderTextColor={colors.textSecondary}
                 />
               </Input>
             </FormControl>
@@ -246,21 +270,24 @@ const EditPersonalDetailsScreen = () => {
                 size="md"
               >
                 <InputField
-                  cursorColor={colors.cursorColor}
+                  cursorColor={colors.textSecondary}
                   style={{ color: colors.text, fontFamily: "Sen" }}
                   value={details.phone_number}
                   onChangeText={(v) => handleDetailsChange("phone_number", v)}
                   keyboardType="phone-pad"
                   maxLength={10}
                   placeholder="Enter number"
-                  placeholderTextColor={"white"}
+                  placeholderTextColor={colors.textSecondary}
                 />
               </Input>
             </FormControl>
             {/* Date of Birth Picker */}
             <Pressable onPress={() => setShowDatePicker(true)}>
               <Text
-                style={{ fontFamily: "Sen", color: colors.textInverted }}
+                style={{
+                  fontFamily: "Sen",
+                  color: colors.textInverted,
+                }}
                 className="text-md uppercase mb-2"
               >
                 Date of birth
@@ -325,7 +352,10 @@ const EditPersonalDetailsScreen = () => {
                         style={{ color: colors.text }}
                       />
                       <ButtonText
-                        style={{ fontFamily: "Sen", color: colors.text }}
+                        style={{
+                          fontFamily: "Sen",
+                          color: colors.text,
+                        }}
                         className={`text-[16px] font-medium `}
                       >
                         {g}
@@ -352,7 +382,7 @@ const EditPersonalDetailsScreen = () => {
               isDisabled={loading}
             >
               {loading ? (
-                <ButtonSpinner color="black" />
+                <ButtonSpinner color={colors.text} />
               ) : (
                 <ButtonText
                   style={{ fontFamily: "Sen_Bold", color: colors.text }}

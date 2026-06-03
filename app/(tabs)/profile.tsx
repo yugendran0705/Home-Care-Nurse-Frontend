@@ -22,7 +22,7 @@ import {
   User as UserIcon,
   Venus,
 } from "lucide-react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -96,6 +96,8 @@ interface Profile {
 export default function ProfileScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const isFirstMount = useRef(true);
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [address, setAddress] = useState<Address[] | null>([]);
   const [loading, setLoading] = useState(true);
@@ -111,6 +113,17 @@ export default function ProfileScreen() {
       ]);
       setProfile(profileResponse.data);
       setAddress([...addressResponse.data].reverse());
+
+      // Save to AsyncStorage
+      await AsyncStorage.setItem(
+        "profile",
+        JSON.stringify(profileResponse.data),
+      );
+      await AsyncStorage.setItem(
+        "addresses",
+        JSON.stringify([...addressResponse.data].reverse()),
+      );
+
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
@@ -123,10 +136,44 @@ export default function ProfileScreen() {
     }
   }, [fadeAnim]);
 
+  const loadFromAsyncStorage = useCallback(async () => {
+    try {
+      const profileData = await AsyncStorage.getItem("profile");
+      const addressesData = await AsyncStorage.getItem("addresses");
+
+      if (profileData) {
+        setProfile(JSON.parse(profileData));
+      }
+      if (addressesData) {
+        setAddress(JSON.parse(addressesData));
+      }
+
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+    } catch (e: any) {
+      console.error("Failed to load from AsyncStorage:", e);
+    }
+  }, [fadeAnim]);
+
   useFocusEffect(
     useCallback(() => {
-      fetchProfile();
-    }, [fetchProfile]),
+      const loadData = async () => {
+        setLoading(true);
+        if (isFirstMount.current) {
+          // First mount: fetch from API
+          await fetchProfile();
+          isFirstMount.current = false;
+        } else {
+          // Subsequent mounts: load from AsyncStorage
+          await loadFromAsyncStorage();
+        }
+        setLoading(false);
+      };
+      loadData();
+    }, [fetchProfile, loadFromAsyncStorage]),
   );
 
   const onRefresh = useCallback(async () => {
@@ -147,6 +194,8 @@ export default function ProfileScreen() {
         onPress: async () => {
           await AsyncStorage.removeItem("access_token");
           await AsyncStorage.removeItem("refresh_token");
+          await AsyncStorage.removeItem("profile");
+          await AsyncStorage.removeItem("addresses");
           router.replace("/sign-in");
         },
       },

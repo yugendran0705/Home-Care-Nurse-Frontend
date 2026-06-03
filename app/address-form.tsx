@@ -16,6 +16,7 @@ import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, MapPin, Trash } from "lucide-react-native";
@@ -58,6 +59,7 @@ const AddressFormScreen = () => {
   const [error, setError] = useState("");
 
   const [address, setAddress] = useState(initialAddressState);
+  const [initialAddress, setInitalAddress] = useState(initialAddressState);
   const [loading, setLoading] = useState(true);
   const [isGeocoding, setIsGeocoding] = useState(false);
 
@@ -72,6 +74,7 @@ const AddressFormScreen = () => {
             `addresses/one/${addressId}`,
           );
           setAddress(response.data);
+          setInitalAddress(response.data);
         } catch {
           Alert.alert("Error", "Could not fetch address details.");
           router.back();
@@ -158,12 +161,21 @@ const AddressFormScreen = () => {
           setLoading(true);
           try {
             if (isEditMode) {
+              if (JSON.stringify(address) === JSON.stringify(initialAddress)) {
+                router.back();
+                return;
+              }
               await axiosInstance.put(`addresses/${addressId}`, address);
               Alert.alert("Success", "Address updated successfully.");
             } else {
-              await axiosInstance.post("/addresses", address);
+              await axiosInstance.post("addresses", address);
               Alert.alert("Success", "New address added.");
             }
+            const response = await axiosInstance.get("addresses/me");
+            await AsyncStorage.setItem(
+              "addresses",
+              JSON.stringify([...response.data].reverse()),
+            );
             router.back();
           } catch (error: any) {
             Alert.alert("Error", error.response.data.detail);
@@ -190,6 +202,11 @@ const AddressFormScreen = () => {
             setLoading(true);
             try {
               await axiosInstance.delete(`addresses/${addressId}`);
+              const response = await axiosInstance.get("addresses/me");
+              await AsyncStorage.setItem(
+                "addresses",
+                JSON.stringify([...response.data].reverse()),
+              );
               Alert.alert("Success", "Address deleted successfully.");
               router.back();
             } catch (error: any) {
@@ -270,8 +287,8 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase text-white"
-              style={{ fontFamily: "Sen" }}
+              className="text-md uppercase"
+              style={{ fontFamily: "Sen", color: colors.text }}
             >
               Address Line 1
             </FormControlLabelText>
@@ -292,7 +309,7 @@ const AddressFormScreen = () => {
               style={{ color: colors.text, fontFamily: "Sen" }}
               placeholder="Address Line 1"
               placeholderTextColor={colors.text}
-              cursorColor={"white"}
+              cursorColor={colors.text}
               value={address.address_line_1}
               onChangeText={(v) => handleAddressChange("address_line_1", v)}
             />
@@ -302,8 +319,8 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase text-white"
-              style={{ fontFamily: "Sen-Regular" }}
+              className="text-md uppercase "
+              style={{ fontFamily: "Sen-Regular", color: colors.text }}
             >
               Address Line 2 (Optional)
             </FormControlLabelText>
@@ -322,7 +339,7 @@ const AddressFormScreen = () => {
           >
             <InputField
               placeholderTextColor={colors.text}
-              cursorColor={"white"}
+              cursorColor={colors.text}
               style={{ color: colors.text, fontFamily: "Sen" }}
               placeholder="Address Line 2"
               value={address.address_line_2}
@@ -334,8 +351,8 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase text-white"
-              style={{ fontFamily: "Sen-Regular" }}
+              className="text-md uppercase "
+              style={{ fontFamily: "Sen-Regular", color: colors.text }}
             >
               City
             </FormControlLabelText>
@@ -354,7 +371,7 @@ const AddressFormScreen = () => {
           >
             <InputField
               placeholderTextColor={colors.text}
-              cursorColor={"white"}
+              cursorColor={colors.text}
               style={{ color: colors.text, fontFamily: "Sen" }}
               placeholder="City"
               value={address.city}
@@ -366,8 +383,8 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase text-white"
-              style={{ fontFamily: "Sen-Regular" }}
+              className="text-md uppercase "
+              style={{ fontFamily: "Sen-Regular", color: colors.text }}
             >
               State
             </FormControlLabelText>
@@ -386,7 +403,7 @@ const AddressFormScreen = () => {
           >
             <InputField
               placeholderTextColor={colors.text}
-              cursorColor={"white"}
+              cursorColor={colors.text}
               style={{ color: colors.text, fontFamily: "Sen" }}
               placeholder="State"
               value={address.state}
@@ -398,8 +415,8 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase text-white"
-              style={{ fontFamily: "Sen-Regular" }}
+              className="text-md uppercase "
+              style={{ fontFamily: "Sen-Regular", color: colors.text }}
             >
               Pincode
             </FormControlLabelText>
@@ -418,7 +435,7 @@ const AddressFormScreen = () => {
           >
             <InputField
               placeholderTextColor={colors.text}
-              cursorColor={"white"}
+              cursorColor={colors.text}
               style={{ color: colors.text, fontFamily: "Sen" }}
               placeholder="Pincode"
               value={address.pincode}
@@ -503,7 +520,12 @@ const AddressFormScreen = () => {
         style={{ backgroundColor: colors.background }}
       >
         <Box className="flex-row gap-4 items-center px-3 mt-5">
-          <Pressable onPress={() => router.back()} className="ml-2">
+          <Pressable
+            onPress={() =>
+              step === 2 && !isEditMode ? setStep(1) : router.back()
+            }
+            className="ml-2"
+          >
             <Icon as={ArrowLeft} size="xl" />
           </Pressable>
           <Text
