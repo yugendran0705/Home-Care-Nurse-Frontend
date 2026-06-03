@@ -204,16 +204,22 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#4c8bf5" />
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <ActivityIndicator size="large" color={colors.text} />
       </Box>
     );
   }
 
   if (!profile) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <Text style={{ fontFamily: "Sen" }} className="text-white">
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <Text style={{ fontFamily: "Sen", color: colors.text }}>
           Failed to load profile. Please try again later.
         </Text>
       </Box>
@@ -428,7 +434,11 @@ export default function ProfileScreen() {
             <Box
               key={address.id}
               className="flex-row items-start gap-4 p-2 rounded-lg"
-              style={{ backgroundColor: colors.secondaryBackgroundGradient }}
+              style={{
+                backgroundColor: colors.secondaryBackgroundGradient,
+                borderWidth: address.is_primary ? 2 : 0,
+                borderColor: "#FBBF24",
+              }}
             >
               <Icon as={LocationEdit} style={{ color: colors.text }} />
               <Box className="flex-1 flex-row items-start justify-between">
@@ -437,24 +447,25 @@ export default function ProfileScreen() {
                   className="text-lg"
                 >
                   {address.address_line_1 ? `${address.address_line_1},\n` : ""}
+                  {address.address_line_2 ? `${address.address_line_2},\n` : ""}
                   {address.city},{"\n"}
                   {address.state},{"\n"}
                   {address.pincode}.
                 </Text>
-                {address.is_primary && (
-                  <Box
-                    style={{ backgroundColor: colors.success }}
-                    className="rounded-[10px] px-2 py-1"
-                  >
-                    <Text
-                      style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                      className=" text-[10px]"
-                    >
-                      Primary
-                    </Text>
-                  </Box>
-                )}
               </Box>
+              {address.is_primary && (
+                <Box
+                  style={{ backgroundColor: "#FBBF24" }}
+                  className="rounded-[10px] px-2 py-1"
+                >
+                  <Text
+                    style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                    className=" text-[10px]"
+                  >
+                    Primary
+                  </Text>
+                </Box>
+              )}
             </Box>
           ))}
         </ScrollView>

@@ -117,7 +117,7 @@ const EditPersonalDetailsScreen = () => {
       !details?.last_name ||
       !details?.phone_number
     ) {
-      setError("Please enter any one of the fields!");
+      setError("Please fill all required fields.");
       return;
     }
     Alert.alert(

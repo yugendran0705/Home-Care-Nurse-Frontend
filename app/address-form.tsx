@@ -59,7 +59,7 @@ const AddressFormScreen = () => {
   const [error, setError] = useState("");
 
   const [address, setAddress] = useState(initialAddressState);
-  const [initialAddress, setInitalAddress] = useState(initialAddressState);
+  const [initialAddress, setInitialAddress] = useState(initialAddressState);
   const [loading, setLoading] = useState(true);
   const [isGeocoding, setIsGeocoding] = useState(false);
 
@@ -74,7 +74,7 @@ const AddressFormScreen = () => {
             `addresses/one/${addressId}`,
           );
           setAddress(response.data);
-          setInitalAddress(response.data);
+          setInitialAddress(response.data);
         } catch {
           Alert.alert("Error", "Could not fetch address details.");
           router.back();
