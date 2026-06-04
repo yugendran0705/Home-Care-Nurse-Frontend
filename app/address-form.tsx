@@ -178,7 +178,11 @@ const AddressFormScreen = () => {
             );
             router.back();
           } catch (error: any) {
-            Alert.alert("Error", error.response.data.detail);
+            Alert.alert(
+              "Error",
+              error?.response?.data?.detail ??
+                "Could not save address. Please try again.",
+            );
           } finally {
             setLoading(false);
           }

@@ -364,38 +364,52 @@ export default function ProfileScreen() {
           contentContainerStyle={{ gap: 12 }}
           nestedScrollEnabled
         >
-          {profile.services.map((service) => {
-            return (
-              <Box
-                key={service.id}
-                className="rounded-xl mr-4"
-                style={{
-                  backgroundColor: colors.secondaryBackgroundGradient,
-                }}
+          {profile.services && profile.services.length === 0 ? (
+            <Box className="flex flex-col items-center">
+              <Text
+                className="text-xl"
+                style={{ color: colors.text, fontFamily: "Sen" }}
               >
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/service-page",
-                      params: {
-                        id: service.id,
-                      },
-                    })
-                  }
-                  className="flex-row justify-between items-center px-4 py-3"
+                Choose a service.
+              </Text>
+            </Box>
+          ) : (
+            profile.services.map((service) => {
+              return (
+                <Box
+                  key={service.id}
+                  className="rounded-xl mr-4"
+                  style={{
+                    backgroundColor: colors.secondaryBackgroundGradient,
+                  }}
                 >
-                  <Text
-                    style={{ fontFamily: "Sen", color: colors.text }}
-                    className="text-lg"
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/service-page",
+                        params: {
+                          id: service.id,
+                        },
+                      })
+                    }
+                    className="flex-row justify-between items-center px-4 py-3"
                   >
-                    {service.service_name}
-                  </Text>
+                    <Text
+                      style={{ fontFamily: "Sen", color: colors.text }}
+                      className="text-lg"
+                    >
+                      {service.service_name}
+                    </Text>
 
-                  <Icon as={LucideArrowRight} style={{ color: colors.text }} />
-                </Pressable>
-              </Box>
-            );
-          })}
+                    <Icon
+                      as={LucideArrowRight}
+                      style={{ color: colors.text }}
+                    />
+                  </Pressable>
+                </Box>
+              );
+            })
+          )}
         </ScrollView>
       </Box>
     </VStack>

@@ -123,7 +123,10 @@ const EditServicesScreen = () => {
         );
         setServices(activeServices);
       } catch (e: any) {
-        Alert.alert("Error", e.response.data.detail);
+        Alert.alert(
+          "Error",
+          e?.response?.data?.detail ?? "Could not fetch your details.",
+        );
       } finally {
         setServicesLoading(false);
       }
