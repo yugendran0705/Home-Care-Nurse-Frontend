@@ -213,17 +213,13 @@ export default function SignUpScreen() {
 
   // --- LOCATION FETCH ---
   useEffect(() => {
-    if (step === 0) {
-      router.back();
-    }
-
     const controller = new AbortController();
 
     const getServices = async () => {
       setError("");
       setServicesLoading(true);
       try {
-        const response = await axiosInstance.get("services/all", {
+        const response = await axiosInstance.get("nursing_services/all", {
           signal: controller.signal,
         });
         const activeServices = response.data.filter(
@@ -334,6 +330,7 @@ export default function SignUpScreen() {
         formData.last_name &&
         formData.date_of_birth &&
         formData.phone_number &&
+        formData.phone_number.length === 10 &&
         formData.gender
       );
     }
@@ -418,11 +415,12 @@ export default function SignUpScreen() {
   };
 
   const handlePrevStep = () => {
-    if (step !== 0) {
-      setStep((s) => s - 1);
-    }
     setError("");
-    return;
+    if (step > 1) {
+      setStep((s) => s - 1);
+    } else {
+      router.back();
+    }
   };
 
   const handleConfirmLocationAndGeocode = async () => {
@@ -618,6 +616,7 @@ export default function SignUpScreen() {
             onChangeText={(text) => handleFormChange("email", text)}
             autoCapitalize="none"
             type="text"
+            keyboardType="email-address"
           />
         </Input>
       </FormControl>
@@ -644,7 +643,7 @@ export default function SignUpScreen() {
         >
           <InputField
             style={{ fontFamily: "Sen", color: colors.text }}
-            type={isPasswordVisible ? "text" : "password"}
+            secureTextEntry={!isPasswordVisible}
             placeholder="eg: ********"
             placeholderTextColor={colors.text}
             cursorColor={colors.text}
@@ -725,6 +724,7 @@ export default function SignUpScreen() {
           mode="date"
           display="default"
           onChange={onChangeDate}
+          maximumDate={new Date()}
         />
       )}
       <Text

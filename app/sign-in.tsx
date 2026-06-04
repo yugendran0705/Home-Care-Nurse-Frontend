@@ -239,6 +239,7 @@ export default function SignInScreen() {
                         onChangeText={(text) => handleChange("email", text)}
                         cursorColor={colors.text}
                         placeholderTextColor={colors.text}
+                        keyboardType="email-address"
                       />
                     </Input>
                   </FormControl>
@@ -264,7 +265,7 @@ export default function SignInScreen() {
                       </InputSlot>
                       <InputField
                         style={{ fontFamily: "Sen", color: colors.text }}
-                        type={isPasswordVisible ? "text" : "password"}
+                        secureTextEntry={!isPasswordVisible}
                         placeholder="********"
                         value={credentials.password}
                         onChangeText={(text) => handleChange("password", text)}

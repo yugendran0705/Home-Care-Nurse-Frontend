@@ -33,7 +33,7 @@ const ServiceScreen = () => {
   useEffect(() => {
     const fetchServiceData = async () => {
       try {
-        const response = await axiosInstance.get(`services/one/${id}`);
+        const response = await axiosInstance.get(`nursing_services/one/${id}`);
 
         setService(response.data);
         Animated.timing(fadeAnim, {
@@ -47,6 +47,7 @@ const ServiceScreen = () => {
           error?.response?.data?.detail ??
             "Something went wrong. Please try again.",
         );
+        router.back();
       }
     };
 
@@ -136,7 +137,7 @@ const ServiceScreen = () => {
       >
         <Animated.View className="p-6" style={{ opacity: fadeAnim }}>
           <Pressable onPress={() => router.back()}>
-            <Icon as={ArrowLeft} size="xl" />
+            <Icon as={ArrowLeft} size="xl" color={colors.text} />
           </Pressable>
           {service ? renderDetails() : renderOnError()}
         </Animated.View>

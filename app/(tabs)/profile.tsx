@@ -22,7 +22,7 @@ import {
   User as UserIcon,
   Venus,
 } from "lucide-react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -96,6 +96,8 @@ interface Profile {
 export default function ProfileScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
+  const isFirstMount = useRef(true);
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [address, setAddress] = useState<Address[] | null>([]);
   const [loading, setLoading] = useState(true);
@@ -111,6 +113,17 @@ export default function ProfileScreen() {
       ]);
       setProfile(profileResponse.data);
       setAddress([...addressResponse.data].reverse());
+
+      // Save to AsyncStorage
+      await AsyncStorage.setItem(
+        "profile",
+        JSON.stringify(profileResponse.data),
+      );
+      await AsyncStorage.setItem(
+        "addresses",
+        JSON.stringify([...addressResponse.data].reverse()),
+      );
+
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
@@ -123,10 +136,44 @@ export default function ProfileScreen() {
     }
   }, [fadeAnim]);
 
+  const loadFromAsyncStorage = useCallback(async () => {
+    try {
+      const profileData = await AsyncStorage.getItem("profile");
+      const addressesData = await AsyncStorage.getItem("addresses");
+
+      if (profileData) {
+        setProfile(JSON.parse(profileData));
+      }
+      if (addressesData) {
+        setAddress(JSON.parse(addressesData));
+      }
+
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+    } catch (e: any) {
+      console.error("Failed to load from AsyncStorage:", e);
+    }
+  }, [fadeAnim]);
+
   useFocusEffect(
     useCallback(() => {
-      fetchProfile();
-    }, [fetchProfile]),
+      const loadData = async () => {
+        setLoading(true);
+        if (isFirstMount.current) {
+          // First mount: fetch from API
+          await fetchProfile();
+          isFirstMount.current = false;
+        } else {
+          // Subsequent mounts: load from AsyncStorage
+          await loadFromAsyncStorage();
+        }
+        setLoading(false);
+      };
+      loadData();
+    }, [fetchProfile, loadFromAsyncStorage]),
   );
 
   const onRefresh = useCallback(async () => {
@@ -147,6 +194,8 @@ export default function ProfileScreen() {
         onPress: async () => {
           await AsyncStorage.removeItem("access_token");
           await AsyncStorage.removeItem("refresh_token");
+          await AsyncStorage.removeItem("profile");
+          await AsyncStorage.removeItem("addresses");
           router.replace("/sign-in");
         },
       },
@@ -155,16 +204,22 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#4c8bf5" />
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <ActivityIndicator size="large" color={colors.text} />
       </Box>
     );
   }
 
   if (!profile) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <Text style={{ fontFamily: "Sen" }} className="text-white">
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <Text style={{ fontFamily: "Sen", color: colors.text }}>
           Failed to load profile. Please try again later.
         </Text>
       </Box>
@@ -309,38 +364,52 @@ export default function ProfileScreen() {
           contentContainerStyle={{ gap: 12 }}
           nestedScrollEnabled
         >
-          {profile.services.map((service) => {
-            return (
-              <Box
-                key={service.id}
-                className="rounded-xl mr-4"
-                style={{
-                  backgroundColor: colors.secondaryBackgroundGradient,
-                }}
+          {profile.services && profile.services.length === 0 ? (
+            <Box className="flex flex-col items-center">
+              <Text
+                className="text-xl"
+                style={{ color: colors.text, fontFamily: "Sen" }}
               >
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/service-page",
-                      params: {
-                        id: service.id,
-                      },
-                    })
-                  }
-                  className="flex-row justify-between items-center px-4 py-3"
+                Choose a service.
+              </Text>
+            </Box>
+          ) : (
+            profile.services.map((service) => {
+              return (
+                <Box
+                  key={service.id}
+                  className="rounded-xl mr-4"
+                  style={{
+                    backgroundColor: colors.secondaryBackgroundGradient,
+                  }}
                 >
-                  <Text
-                    style={{ fontFamily: "Sen", color: colors.text }}
-                    className="text-lg"
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/service-page",
+                        params: {
+                          id: service.id,
+                        },
+                      })
+                    }
+                    className="flex-row justify-between items-center px-4 py-3"
                   >
-                    {service.service_name}
-                  </Text>
+                    <Text
+                      style={{ fontFamily: "Sen", color: colors.text }}
+                      className="text-lg"
+                    >
+                      {service.service_name}
+                    </Text>
 
-                  <Icon as={LucideArrowRight} style={{ color: colors.text }} />
-                </Pressable>
-              </Box>
-            );
-          })}
+                    <Icon
+                      as={LucideArrowRight}
+                      style={{ color: colors.text }}
+                    />
+                  </Pressable>
+                </Box>
+              );
+            })
+          )}
         </ScrollView>
       </Box>
     </VStack>
@@ -379,7 +448,11 @@ export default function ProfileScreen() {
             <Box
               key={address.id}
               className="flex-row items-start gap-4 p-2 rounded-lg"
-              style={{ backgroundColor: colors.secondaryBackgroundGradient }}
+              style={{
+                backgroundColor: colors.secondaryBackgroundGradient,
+                borderWidth: address.is_primary ? 2 : 0,
+                borderColor: "#FBBF24",
+              }}
             >
               <Icon as={LocationEdit} style={{ color: colors.text }} />
               <Box className="flex-1 flex-row items-start justify-between">
@@ -388,24 +461,25 @@ export default function ProfileScreen() {
                   className="text-lg"
                 >
                   {address.address_line_1 ? `${address.address_line_1},\n` : ""}
+                  {address.address_line_2 ? `${address.address_line_2},\n` : ""}
                   {address.city},{"\n"}
                   {address.state},{"\n"}
                   {address.pincode}.
                 </Text>
-                {address.is_primary && (
-                  <Box
-                    style={{ backgroundColor: colors.success }}
-                    className="rounded-[10px] px-2 py-1"
-                  >
-                    <Text
-                      style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                      className=" text-[10px]"
-                    >
-                      Primary
-                    </Text>
-                  </Box>
-                )}
               </Box>
+              {address.is_primary && (
+                <Box
+                  style={{ backgroundColor: "#FBBF24" }}
+                  className="rounded-[10px] px-2 py-1"
+                >
+                  <Text
+                    style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                    className=" text-[10px]"
+                  >
+                    Primary
+                  </Text>
+                </Box>
+              )}
             </Box>
           ))}
         </ScrollView>

@@ -5,6 +5,7 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft, Plus } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
@@ -37,10 +38,39 @@ const ManageAddressesScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
-  const loadData = useCallback(async () => {
+  const loadFromAsyncStorage = useCallback(async () => {
+    try {
+      const response = await AsyncStorage.getItem("addresses");
+      if (response) {
+        const data = JSON.parse(response);
+        setAddresses(data);
+      } else {
+        const response = await axiosInstance.get("addresses/me");
+        setAddresses([...response.data].reverse());
+        await AsyncStorage.setItem(
+          "addresses",
+          JSON.stringify([...response.data].reverse()),
+        );
+      }
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    } catch (e) {
+      Alert.alert("Error", "Failed to fetch addresses.");
+      console.error(e);
+    }
+  }, [fadeAnim]);
+
+  const fetchData = useCallback(async () => {
     try {
       const response = await axiosInstance.get("addresses/me");
       setAddresses([...response.data].reverse());
+      await AsyncStorage.setItem(
+        "addresses",
+        JSON.stringify([...response.data].reverse()),
+      );
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
@@ -56,11 +86,11 @@ const ManageAddressesScreen = () => {
     useCallback(() => {
       const initialLoad = async () => {
         setLoading(true);
-        await loadData();
+        await loadFromAsyncStorage();
         setLoading(false);
       };
       initialLoad();
-    }, [loadData]),
+    }, [loadFromAsyncStorage]),
   );
 
   const handleSetPrimary = async (addressId: string) => {
@@ -78,7 +108,7 @@ const ManageAddressesScreen = () => {
             try {
               await axiosInstance.patch(`addresses/set_primary/${addressId}`);
               Alert.alert("Success", "Primary address updated.");
-              await loadData();
+              await fetchData();
             } catch (error: any) {
               Alert.alert(
                 "Error",
@@ -96,9 +126,9 @@ const ManageAddressesScreen = () => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadData();
+    await fetchData();
     setRefreshing(false);
-  }, [loadData]);
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -140,8 +170,12 @@ const ManageAddressesScreen = () => {
             {addresses.map((addr) => (
               <VStack
                 key={addr.id}
-                style={{ backgroundColor: colors.secondaryBackground }}
-                className="rounded-[14px] p-[20px] mb-[20px] relative"
+                style={{
+                  backgroundColor: colors.secondaryBackground,
+                  borderWidth: addr.is_primary ? 2 : 0,
+                  borderColor: "#FBBF24",
+                }}
+                className="rounded-xl p-4 mb-4"
               >
                 <Box>
                   <Text
@@ -158,20 +192,22 @@ const ManageAddressesScreen = () => {
                   </Text>
                 </Box>
 
-                {addr.is_primary && (
-                  <Box className="absolute top-[15px] right-[15px] bg-[#4CAF50] rounded-[10px] px-[8px] py-[4px]">
-                    <Text
-                      style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                      className=" text-[12px]"
-                    >
-                      Primary
-                    </Text>
-                  </Box>
-                )}
-
                 <Divider className="bg-gray-300 my-2" />
 
-                <Box className="flex-row justify-end pt-[15px]">
+                <Box className="flex flex-row items-center justify-end pt-[15px] relative">
+                  {addr.is_primary && (
+                    <Box
+                      style={{ backgroundColor: "#FBBF24" }}
+                      className=" absolute bottom-3 left-0 rounded-xl px-2 py-1"
+                    >
+                      <Text
+                        style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                        className="text-xs"
+                      >
+                        Primary
+                      </Text>
+                    </Box>
+                  )}
                   {!addr.is_primary && (
                     <Button
                       className="px-[15px] py-[8px] ml-[10px] rounded-[8px] active:opacity-70"
@@ -189,7 +225,7 @@ const ManageAddressesScreen = () => {
                     </Button>
                   )}
                   <Button
-                    className="px-[15px] py-[8px] ml-[10px] bg-[#192f6a] rounded-[8px] active:opacity-70"
+                    className="px-[15px] py-[8px] ml-[10px] rounded-[8px] active:opacity-70"
                     style={{ backgroundColor: colors.background }}
                     onPress={() =>
                       router.push({
