@@ -165,12 +165,12 @@ const EditServicesScreen = () => {
                   JSON.stringify(response.data),
                 );
               }
+              Alert.alert("Success", "Your services have been updated.");
+              router.back();
             } else {
               Alert.alert("Failure", "Atleast choose one service.");
               return;
             }
-            Alert.alert("Success", "Your services have been updated.");
-            router.back();
           } catch (error: any) {
             Alert.alert(
               "Error",
