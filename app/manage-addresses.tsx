@@ -40,17 +40,14 @@ const ManageAddressesScreen = () => {
 
   const loadFromAsyncStorage = useCallback(async () => {
     try {
-      const response = await AsyncStorage.getItem("addresses");
-      if (response) {
-        const data = JSON.parse(response);
+      const cachedAddresses = await AsyncStorage.getItem("addresses");
+      if (cachedAddresses) {
+        const data = JSON.parse(cachedAddresses);
         setAddresses(data);
       } else {
         const response = await axiosInstance.get("addresses/me");
-        setAddresses([...response.data].reverse());
-        await AsyncStorage.setItem(
-          "addresses",
-          JSON.stringify([...response.data].reverse()),
-        );
+        setAddresses(response.data);
+        await AsyncStorage.setItem("addresses", JSON.stringify(response.data));
       }
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -66,11 +63,8 @@ const ManageAddressesScreen = () => {
   const fetchData = useCallback(async () => {
     try {
       const response = await axiosInstance.get("addresses/me");
-      setAddresses([...response.data].reverse());
-      await AsyncStorage.setItem(
-        "addresses",
-        JSON.stringify([...response.data].reverse()),
-      );
+      setAddresses(response.data);
+      await AsyncStorage.setItem("addresses", JSON.stringify(response.data));
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,

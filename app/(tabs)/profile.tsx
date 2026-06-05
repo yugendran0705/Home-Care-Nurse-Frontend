@@ -121,7 +121,7 @@ export default function ProfileScreen() {
       );
       await AsyncStorage.setItem(
         "addresses",
-        JSON.stringify([...addressResponse.data].reverse()),
+        JSON.stringify(addressResponse.data),
       );
 
       Animated.timing(fadeAnim, {
@@ -364,7 +364,7 @@ export default function ProfileScreen() {
           contentContainerStyle={{ gap: 12 }}
           nestedScrollEnabled
         >
-          {profile.services && profile.services.length === 0 ? (
+          {!profile.services || profile.services.length === 0 ? (
             <Box className="flex flex-col items-center">
               <Text
                 className="text-xl"

@@ -615,7 +615,7 @@ export default function SignUpScreen() {
             value={formData.email}
             onChangeText={(text) => handleFormChange("email", text)}
             autoCapitalize="none"
-            type="text"
+            textContentType="emailAddress"
             keyboardType="email-address"
           />
         </Input>
