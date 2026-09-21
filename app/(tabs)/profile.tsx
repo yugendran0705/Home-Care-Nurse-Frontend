@@ -1,10 +1,11 @@
 import { Box } from "@/components/ui/box";
-import { Button, ButtonIcon } from "@/components/ui/button";
+import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import {
   BriefcaseBusiness,
@@ -36,6 +37,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import axiosInstance from "../../axiosInstance";
 import { Colors } from "../../constants/Colors";
+import { Fonts } from "../../constants/Typography";
 
 interface User {
   id: string;
@@ -102,6 +104,7 @@ export default function ProfileScreen() {
   const [address, setAddress] = useState<Address[] | null>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const router = useRouter();
   const fadeAnim = useState(new Animated.Value(0))[0];
 
@@ -208,7 +211,7 @@ export default function ProfileScreen() {
         className="flex-1 justify-center items-center"
         style={{ backgroundColor: colors.background }}
       >
-        <ActivityIndicator size="large" color={colors.text} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </Box>
     );
   }
@@ -219,7 +222,7 @@ export default function ProfileScreen() {
         className="flex-1 justify-center items-center"
         style={{ backgroundColor: colors.background }}
       >
-        <Text style={{ fontFamily: "Sen", color: colors.text }}>
+        <Text style={{ fontFamily: Fonts.regular, color: colors.text }}>
           Failed to load profile. Please try again later.
         </Text>
       </Box>
@@ -230,12 +233,20 @@ export default function ProfileScreen() {
     <>
       <VStack
         space="lg"
-        style={{ backgroundColor: colors.secondaryBackground }}
-        className="rounded-[12px] p-4 mb-4"
+        style={{
+          backgroundColor: colors.secondaryBackground,
+          borderColor: colors.border,
+          shadowColor: colors.shadowColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
+          elevation: 2,
+        }}
+        className="rounded-2xl p-5 mb-4 border"
       >
         <Box className="flex-row justify-between">
           <Text
-            style={{ fontFamily: "Sen_Bold", color: colors.text }}
+            style={{ fontFamily: Fonts.semibold, color: colors.text }}
             className="text-[18px]"
           >
             Personal Information
@@ -244,24 +255,24 @@ export default function ProfileScreen() {
             className="p-1 rounded-lg"
             onPress={() => router.push("/edit-personal-details")}
           >
-            <Icon as={Edit} style={{ color: colors.text }} />
+            <Icon as={Edit} style={{ color: colors.primary }} />
           </Pressable>
         </Box>
 
-        <Divider className="bg-gray-300" />
+        <Divider style={{ backgroundColor: colors.border }} />
         <Box className="flex-row items-center mb-2 gap-4">
-          <Icon as={Phone} style={{ color: colors.text }} />
+          <Icon as={Phone} style={{ color: colors.icon }} />
           <Text
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             className="text-lg "
           >
             {profile.nurse.phone_number}
           </Text>
         </Box>
         <Box className="flex-row items-center mb-2 gap-4">
-          <Icon as={CalendarDays} style={{ color: colors.text }} />
+          <Icon as={CalendarDays} style={{ color: colors.icon }} />
           <Text
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             className="text-lg "
           >
             {new Date(profile.nurse.date_of_birth).toLocaleDateString()}
@@ -273,7 +284,7 @@ export default function ProfileScreen() {
             style={{ color: colors.text }}
           />
           <Text
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             className="text-lg "
           >
             {profile.nurse.gender}
@@ -286,38 +297,46 @@ export default function ProfileScreen() {
   const renderProfessionalDetails = () => (
     <VStack
       space="lg"
-      style={{ backgroundColor: colors.secondaryBackground }}
-      className="rounded-[12px] p-4 mb-4"
+      style={{
+        backgroundColor: colors.secondaryBackground,
+        borderColor: colors.border,
+        shadowColor: colors.shadowColor,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 2,
+      }}
+      className="rounded-2xl p-5 mb-4 border"
     >
       <Text
-        style={{ fontFamily: "Sen_Bold", color: colors.text }}
+        style={{ fontFamily: Fonts.semibold, color: colors.text }}
         className="text-[18px]"
       >
         Professional Details
       </Text>
-      <Divider className="bg-gray-300" />
+      <Divider style={{ backgroundColor: colors.border }} />
       <Box className="flex-row items-center mb-2 gap-4">
-        <Icon as={BriefcaseBusiness} style={{ color: colors.text }} />
+        <Icon as={BriefcaseBusiness} style={{ color: colors.icon }} />
         <Text
-          style={{ fontFamily: "Sen", color: colors.text }}
+          style={{ fontFamily: Fonts.regular, color: colors.text }}
           className="text-lg "
         >
           {profile.nurse.years_of_experience} years of experience
         </Text>
       </Box>
       <Box className="flex-row items-center mb-2 gap-4">
-        <Icon as={Dock} style={{ color: colors.text }} />
+        <Icon as={Dock} style={{ color: colors.icon }} />
         <Text
-          style={{ fontFamily: "Sen", color: colors.text }}
+          style={{ fontFamily: Fonts.regular, color: colors.text }}
           className="text-lg "
         >
           License: {profile.nurse.license_number}
         </Text>
       </Box>
       <Box className="flex-row items-center gap-4">
-        <Icon as={Star} style={{ color: colors.text }} />
+        <Icon as={Star} style={{ color: colors.accent }} />
         <Text
-          style={{ fontFamily: "Sen", color: colors.text }}
+          style={{ fontFamily: Fonts.regular, color: colors.text }}
           className="text-lg "
         >
           Rating: {profile.nurse.average_rating}
@@ -325,9 +344,9 @@ export default function ProfileScreen() {
       </Box>
       {profile.nurse.bio ? (
         <Box className="flex-row items-center gap-4">
-          <Icon as={UserIcon} style={{ color: colors.text }} />
+          <Icon as={UserIcon} style={{ color: colors.icon }} />
           <Text
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             className="text-lg "
           >
             {profile.nurse.bio}
@@ -340,12 +359,20 @@ export default function ProfileScreen() {
   const renderServices = () => (
     <VStack
       space="lg"
-      style={{ backgroundColor: colors.secondaryBackground }}
-      className="rounded-[12px] p-4 mb-4"
+      style={{
+        backgroundColor: colors.secondaryBackground,
+        borderColor: colors.border,
+        shadowColor: colors.shadowColor,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 2,
+      }}
+      className="rounded-2xl p-5 mb-4 border"
     >
       <Box className="flex-row justify-between">
         <Text
-          style={{ fontFamily: "Sen_Bold", color: colors.text }}
+          style={{ fontFamily: Fonts.semibold, color: colors.text }}
           className="text-[18px]"
         >
           Services
@@ -354,10 +381,10 @@ export default function ProfileScreen() {
           className="p-1 rounded-lg"
           onPress={() => router.push("/edit-services")}
         >
-          <Icon as={Edit} style={{ color: colors.text }} />
+          <Icon as={Edit} style={{ color: colors.primary }} />
         </Pressable>
       </Box>
-      <Divider className="bg-gray-300" />
+      <Divider style={{ backgroundColor: colors.border }} />
       <Box style={{ maxHeight: 190 }}>
         <ScrollView
           // showsVerticalScrollIndicator={false}
@@ -368,7 +395,7 @@ export default function ProfileScreen() {
             <Box className="flex flex-col items-center">
               <Text
                 className="text-xl"
-                style={{ color: colors.text, fontFamily: "Sen" }}
+                style={{ color: colors.text, fontFamily: Fonts.regular }}
               >
                 Choose a service.
               </Text>
@@ -378,9 +405,10 @@ export default function ProfileScreen() {
               return (
                 <Box
                   key={service.id}
-                  className="rounded-xl mr-4"
+                  className="rounded-xl border"
                   style={{
-                    backgroundColor: colors.secondaryBackgroundGradient,
+                    backgroundColor: colors.primaryTint,
+                    borderColor: colors.primarySoft,
                   }}
                 >
                   <Pressable
@@ -395,15 +423,18 @@ export default function ProfileScreen() {
                     className="flex-row justify-between items-center px-4 py-3"
                   >
                     <Text
-                      style={{ fontFamily: "Sen", color: colors.text }}
-                      className="text-lg"
+                      style={{
+                        fontFamily: Fonts.semibold,
+                        color: colors.primaryDark,
+                      }}
+                      className="text-[16px]"
                     >
                       {service.service_name}
                     </Text>
 
                     <Icon
                       as={LucideArrowRight}
-                      style={{ color: colors.text }}
+                      style={{ color: colors.primary }}
                     />
                   </Pressable>
                 </Box>
@@ -418,12 +449,20 @@ export default function ProfileScreen() {
   const renderAddresses = () => (
     <VStack
       space="lg"
-      style={{ backgroundColor: colors.secondaryBackground }}
-      className="rounded-[12px] p-4 mb-4"
+      style={{
+        backgroundColor: colors.secondaryBackground,
+        borderColor: colors.border,
+        shadowColor: colors.shadowColor,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 2,
+      }}
+      className="rounded-2xl p-5 mb-4 border"
     >
       <Box className="flex-row justify-between">
         <Text
-          style={{ fontFamily: "Sen_Bold", color: colors.text }}
+          style={{ fontFamily: Fonts.semibold, color: colors.text }}
           className="text-[18px]"
         >
           Addresses
@@ -434,10 +473,10 @@ export default function ProfileScreen() {
             router.push("/manage-addresses");
           }}
         >
-          <Icon as={Edit} style={{ color: colors.text }} />
+          <Icon as={Edit} style={{ color: colors.primary }} />
         </Pressable>
       </Box>
-      <Divider className="bg-gray-300" />
+      <Divider style={{ backgroundColor: colors.border }} />
       <Box style={{ maxHeight: 250 }}>
         <ScrollView
           // showsVerticalScrollIndicator={false}
@@ -447,18 +486,22 @@ export default function ProfileScreen() {
           {address?.map((address) => (
             <Box
               key={address.id}
-              className="flex-row items-start gap-4 p-2 rounded-lg"
+              className="flex-row items-start gap-3 p-3 rounded-xl"
               style={{
-                backgroundColor: colors.secondaryBackgroundGradient,
-                borderWidth: address.is_primary ? 2 : 0,
-                borderColor: "#FBBF24",
+                backgroundColor: address.is_primary
+                  ? colors.primaryTint
+                  : colors.surfaceMuted,
+                borderWidth: 1,
+                borderColor: address.is_primary
+                  ? colors.primarySoft
+                  : colors.border,
               }}
             >
-              <Icon as={LocationEdit} style={{ color: colors.text }} />
+              <Icon as={LocationEdit} style={{ color: colors.primary }} />
               <Box className="flex-1 flex-row items-start justify-between">
                 <Text
-                  style={{ fontFamily: "Sen", color: colors.text }}
-                  className="text-lg"
+                  style={{ fontFamily: Fonts.regular, color: colors.text }}
+                  className="text-[15px] leading-6"
                 >
                   {address.address_line_1 ? `${address.address_line_1},\n` : ""}
                   {address.address_line_2 ? `${address.address_line_2},\n` : ""}
@@ -469,12 +512,12 @@ export default function ProfileScreen() {
               </Box>
               {address.is_primary && (
                 <Box
-                  style={{ backgroundColor: "#FBBF24" }}
-                  className="rounded-[10px] px-2 py-1"
+                  style={{ backgroundColor: colors.accent }}
+                  className="rounded-full px-2 py-1"
                 >
                   <Text
-                    style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                    className=" text-[10px]"
+                    style={{ fontFamily: Fonts.semibold, color: colors.text }}
+                    className="text-[10px] uppercase"
                   >
                     Primary
                   </Text>
@@ -487,6 +530,19 @@ export default function ProfileScreen() {
     </VStack>
   );
 
+  const initials = `${profile.nurse.first_name?.[0] ?? ""}${
+    profile.nurse.last_name?.[0] ?? ""
+  }`.toUpperCase();
+
+  const avatarStyle = {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    borderWidth: 3,
+    borderColor: "rgba(255,255,255,0.9)",
+    marginBottom: 14,
+  } as const;
+
   return (
     <SafeAreaView
       className="flex-1"
@@ -495,53 +551,100 @@ export default function ProfileScreen() {
     >
       <ScrollView
         className="py-[20px]"
+        contentContainerStyle={{ paddingBottom: 32 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
         }
         nestedScrollEnabled
       >
         <Animated.View className="px-6" style={{ opacity: fadeAnim }}>
-          <Box className="items-center mb-6">
-            <Image
-              source={{
-                uri:
-                  profile.nurse.profile_picture_url ||
-                  "https://picsum.photos/200",
-              }}
-              style={{
-                width: 120,
-                height: 120,
-                borderRadius: 60,
-                borderWidth: 3,
-                borderColor: "white",
-                marginBottom: 16,
-              }}
-            />
+          <LinearGradient
+            colors={[colors.gradientStart, colors.gradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: 24,
+              paddingVertical: 24,
+              alignItems: "center",
+              marginBottom: 20,
+              shadowColor: colors.primaryDeep,
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.2,
+              shadowRadius: 16,
+              elevation: 4,
+            }}
+          >
+            {profile.nurse.profile_picture_url && !avatarFailed ? (
+              <Image
+                source={{ uri: profile.nurse.profile_picture_url }}
+                style={avatarStyle}
+                onError={() => setAvatarFailed(true)}
+              />
+            ) : (
+              <Box
+                style={[
+                  avatarStyle,
+                  {
+                    backgroundColor: "rgba(255,255,255,0.16)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    fontFamily: Fonts.semibold,
+                    color: colors.textInverted,
+                  }}
+                  className="text-[36px]"
+                >
+                  {initials}
+                </Text>
+              </Box>
+            )}
             <Text
-              style={{ fontFamily: "Sen_Bold" }}
-              className="text-[22px] text-white"
+              style={{ fontFamily: Fonts.bold, color: colors.textInverted }}
+              className="text-[22px]"
             >{`${profile.nurse.first_name} ${profile.nurse.last_name}`}</Text>
             <Text
-              style={{ fontFamily: "Sen" }}
-              className="text-[16px] text-white/60 mt-1"
+              style={{
+                fontFamily: Fonts.regular,
+                color: colors.textMutedInverted,
+              }}
+              className="text-[14px] mt-1"
             >
               {profile.nurse.user.email}
             </Text>
-            <Box className="flex-row items-center gap-1.5 mt-2 bg-[#2A2A2A] py-1 px-2 rounded-[12px]">
+            <Box
+              className="flex-row items-center gap-1.5 mt-3 py-1 px-3 rounded-full"
+              style={{ backgroundColor: "rgba(255,255,255,0.16)" }}
+            >
               <Icon
                 as={profile.nurse.is_verified ? ShieldCheckIcon : ShieldOffIcon}
+                style={{
+                  color: profile.nurse.is_verified
+                    ? colors.textInverted
+                    : colors.accent,
+                }}
               />
               <Text
                 style={{
-                  fontSize: 16,
-                  color: profile.nurse.is_verified ? "#4CD964" : "#FF9500",
-                  fontFamily: "Sen",
+                  fontSize: 14,
+                  color: profile.nurse.is_verified
+                    ? colors.textInverted
+                    : colors.accent,
+                  fontFamily: Fonts.semibold,
                 }}
               >
                 {profile.nurse.is_verified ? "Verified" : "Not Verified"}
               </Text>
             </Box>
-          </Box>
+          </LinearGradient>
 
           <Box className="mb-2">
             {renderPersonalInfo()}
@@ -551,16 +654,28 @@ export default function ProfileScreen() {
           </Box>
 
           <Button
-            className="bg-red-500 py-4 rounded-xl h-14 mt-2 mb-10"
+            className="rounded-xl h-14 mt-2 mb-10 border active:opacity-80"
+            style={{
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            }}
             onPress={handleLogout}
           >
-            <ButtonIcon as={LogOut} className="text-white mr-2" />
-            <Text
-              style={{ fontFamily: "Sen_Bold" }}
-              className="text-white text-[18px]"
+            <ButtonIcon
+              as={LogOut}
+              style={{ color: colors.error }}
+              className="mr-2"
+            />
+            <ButtonText
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.error,
+                fontSize: 16,
+                lineHeight: 22,
+              }}
             >
               Log Out
-            </Text>
+            </ButtonText>
           </Button>
         </Animated.View>
       </ScrollView>

@@ -3,5 +3,9 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
+  },
+  "terminal.integrated.env.linux": {
+    "ANDROID_HOME": "/home/yugendran-sunder/Android/Sdk",
+    "ANDROID_SDK_ROOT": "/home/yugendran-sunder/Android/Sdk"
   }
 }

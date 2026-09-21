@@ -31,6 +31,7 @@ import {
 import { Icon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Typography";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ArrowLeft, Mars, Venus } from "lucide-react-native";
 
@@ -161,7 +162,10 @@ const EditPersonalDetailsScreen = () => {
 
   if (loading || !details) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
         <ActivityIndicator size="large" color={colors.text} />
       </Box>
     );
@@ -176,11 +180,11 @@ const EditPersonalDetailsScreen = () => {
         <Animated.View style={{ opacity: fadeAnim }}>
           <Box className="flex-row gap-4 items-center px-3 mt-5">
             <Pressable onPress={() => router.back()} className="ml-2">
-              <Icon as={ArrowLeft} size="xl" />
+              <Icon as={ArrowLeft} size="xl" color={colors.text} />
             </Pressable>
             <Text
               className="text-2xl"
-              style={{ fontFamily: "Sen_Bold", color: colors.text }}
+              style={{ fontFamily: Fonts.semibold, color: colors.text }}
             >
               Edit Personal Details
             </Text>
@@ -189,95 +193,95 @@ const EditPersonalDetailsScreen = () => {
             <FormControl size="lg" className="w-full mb-2">
               <FormControlLabel>
                 <FormControlLabelText
-                  className="text-md uppercase"
-                  style={{ fontFamily: "Sen", color: colors.text }}
+                  className="text-[12px] uppercase"
+                  style={{
+                    fontFamily: Fonts.semibold,
+                    color: colors.textSecondary,
+                    letterSpacing: 0.8,
+                  }}
                 >
                   First Name
                 </FormControlLabelText>
               </FormControlLabel>
               <Input
                 style={{
-                  elevation: 5,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 4,
-                  backgroundColor: colors.secondaryBackground,
+                  backgroundColor: colors.inputBackground,
+                  borderColor: colors.border,
                 }}
-                className="my-1 rounded-xl h-16 pl-2 border-0"
+                className="my-1 rounded-xl h-14 pl-3 border"
                 size="md"
               >
                 <InputField
-                  cursorColor={colors.textSecondary}
-                  style={{ color: colors.text, fontFamily: "Sen" }}
+                  cursorColor={colors.cursorColor}
+                  style={{ color: colors.text, fontFamily: Fonts.regular }}
                   value={details.first_name}
                   onChangeText={(v) => handleDetailsChange("first_name", v)}
                   placeholder="Enter firstname"
-                  placeholderTextColor={colors.textSecondary}
+                  placeholderTextColor={colors.textMuted}
                 />
               </Input>
             </FormControl>
             <FormControl size="lg" className="w-full mb-2">
               <FormControlLabel>
                 <FormControlLabelText
-                  className="text-md uppercase"
-                  style={{ fontFamily: "Sen", color: colors.text }}
+                  className="text-[12px] uppercase"
+                  style={{
+                    fontFamily: Fonts.semibold,
+                    color: colors.textSecondary,
+                    letterSpacing: 0.8,
+                  }}
                 >
                   Last Name
                 </FormControlLabelText>
               </FormControlLabel>
               <Input
                 style={{
-                  elevation: 5,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 4,
-                  backgroundColor: colors.secondaryBackground,
+                  backgroundColor: colors.inputBackground,
+                  borderColor: colors.border,
                 }}
-                className="my-1 rounded-xl h-16 pl-2 border-0"
+                className="my-1 rounded-xl h-14 pl-3 border"
                 size="md"
               >
                 <InputField
-                  cursorColor={colors.textSecondary}
-                  style={{ color: colors.text, fontFamily: "Sen" }}
+                  cursorColor={colors.cursorColor}
+                  style={{ color: colors.text, fontFamily: Fonts.regular }}
                   value={details.last_name}
                   onChangeText={(v) => handleDetailsChange("last_name", v)}
                   placeholder="Enter lastname"
-                  placeholderTextColor={colors.textSecondary}
+                  placeholderTextColor={colors.textMuted}
                 />
               </Input>
             </FormControl>
             <FormControl size="lg" className="w-full mb-2">
               <FormControlLabel>
                 <FormControlLabelText
-                  className="text-md uppercase"
-                  style={{ fontFamily: "Sen", color: colors.text }}
+                  className="text-[12px] uppercase"
+                  style={{
+                    fontFamily: Fonts.semibold,
+                    color: colors.textSecondary,
+                    letterSpacing: 0.8,
+                  }}
                 >
                   Phone Number
                 </FormControlLabelText>
               </FormControlLabel>
               <Input
                 style={{
-                  elevation: 5,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 4,
-                  backgroundColor: colors.secondaryBackground,
+                  backgroundColor: colors.inputBackground,
+                  borderColor: colors.border,
                 }}
-                className="my-1 rounded-xl h-16 pl-2 border-0"
+                className="my-1 rounded-xl h-14 pl-3 border"
                 size="md"
               >
                 <InputField
-                  cursorColor={colors.textSecondary}
-                  style={{ color: colors.text, fontFamily: "Sen" }}
+                  cursorColor={colors.cursorColor}
+                  style={{ color: colors.text, fontFamily: Fonts.regular }}
                   value={details.phone_number}
                   onChangeText={(v) => handleDetailsChange("phone_number", v)}
                   keyboardType="phone-pad"
                   maxLength={10}
                   placeholder="Enter number"
-                  placeholderTextColor={colors.textSecondary}
+                  placeholderTextColor={colors.textMuted}
                 />
               </Input>
             </FormControl>
@@ -285,27 +289,24 @@ const EditPersonalDetailsScreen = () => {
             <Pressable onPress={() => setShowDatePicker(true)}>
               <Text
                 style={{
-                  fontFamily: "Sen",
-                  color: colors.textInverted,
+                  fontFamily: Fonts.semibold,
+                  color: colors.textSecondary,
+                  letterSpacing: 0.8,
                 }}
-                className="text-md uppercase mb-2"
+                className="text-[12px] uppercase mb-2"
               >
                 Date of birth
               </Text>
               <Box
                 style={{
-                  elevation: 5,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 4,
-                  backgroundColor: colors.secondaryBackground,
+                  backgroundColor: colors.inputBackground,
+                  borderColor: colors.border,
                 }}
                 className="h-16 rounded-[14px] px-[15px] mb-[15px] mt-1 justify-center"
               >
                 <Text
                   style={{
-                    fontFamily: "Sen",
+                    fontFamily: Fonts.regular,
                     color: colors.text,
                   }}
                 >
@@ -324,8 +325,12 @@ const EditPersonalDetailsScreen = () => {
             )}
             {/* Gender Selection */}
             <Text
-              style={{ fontFamily: "Sen", color: colors.text }}
-              className="text-md uppercase mb-2"
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.textSecondary,
+                letterSpacing: 0.8,
+              }}
+              className="text-[12px] uppercase mb-2"
             >
               Gender
             </Text>
@@ -337,26 +342,28 @@ const EditPersonalDetailsScreen = () => {
                     <Button
                       onPress={() => handleDetailsChange("gender", g)}
                       variant="solid"
-                      className="h-[50px] rounded-[14px] flex-row items-center justify-center border border-white/20"
+                      className="h-[50px] rounded-[14px] flex-row items-center justify-center"
                       style={{
                         backgroundColor: isActive
-                          ? colors.secondaryBackground
-                          : "transparent",
-                        borderWidth: isActive ? 0 : 1,
-                        borderColor: "rgba(255,255,255,0.2)",
+                          ? colors.primaryTint
+                          : colors.surface,
+                        borderWidth: isActive ? 2 : 1,
+                        borderColor: isActive ? colors.primary : colors.border,
                       }}
                     >
                       <ButtonIcon
                         as={g === "Male" ? Mars : Venus}
                         className={`mr-[8px]`}
-                        style={{ color: colors.text }}
+                        style={{
+                          color: isActive ? colors.primaryDark : colors.icon,
+                        }}
                       />
                       <ButtonText
                         style={{
-                          fontFamily: "Sen",
-                          color: colors.text,
+                          fontFamily: isActive ? Fonts.semibold : Fonts.regular,
+                          color: isActive ? colors.primaryDark : colors.text,
                         }}
-                        className={`text-[16px] font-medium `}
+                        className={`text-[16px]`}
                       >
                         {g}
                       </ButtonText>
@@ -367,8 +374,12 @@ const EditPersonalDetailsScreen = () => {
             </Box>
             {error ? (
               <Text
-                style={{ color: colors.error, fontFamily: "Sen" }}
-                className="text-center mb-4 bg-white/10 rounded-lg p-2"
+                style={{
+                  color: colors.error,
+                  fontFamily: Fonts.regular,
+                  backgroundColor: colors.errorSoft,
+                }}
+                className="text-center mb-4 rounded-lg p-2"
               >
                 {error}
               </Text>
@@ -382,10 +393,13 @@ const EditPersonalDetailsScreen = () => {
               isDisabled={loading}
             >
               {loading ? (
-                <ButtonSpinner color={colors.text} />
+                <ButtonSpinner color={colors.textInverted} />
               ) : (
                 <ButtonText
-                  style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                  style={{
+                    fontFamily: Fonts.semibold,
+                    color: colors.textInverted,
+                  }}
                   className="text-xl"
                 >
                   Save Changes

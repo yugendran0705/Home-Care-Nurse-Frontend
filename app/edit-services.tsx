@@ -9,9 +9,15 @@ import {
   Text,
   useColorScheme,
 } from "react-native";
+import Reanimated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import axiosInstance from "../axiosInstance";
 
+import { AnimatedChevron } from "@/components/AnimatedChevron";
 import { Box } from "@/components/ui/box";
 import {
   Button,
@@ -27,8 +33,9 @@ import {
 } from "@/components/ui/checkbox";
 import { Icon } from "@/components/ui/icon";
 import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Typography";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ArrowLeft, Check, ChevronDown, ChevronUp } from "lucide-react-native";
+import { ArrowLeft, Check } from "lucide-react-native";
 
 interface Service {
   service_name: string;
@@ -77,8 +84,16 @@ const EditServicesScreen = () => {
     }));
   };
 
-  const collapseAll = () => {
-    setExpandedServices({});
+  const anyExpanded = Object.values(expandedServices).some(Boolean);
+
+  const toggleAll = () => {
+    if (anyExpanded) {
+      setExpandedServices({});
+      return;
+    }
+    setExpandedServices(
+      Object.fromEntries(services.map((service) => [service.id, true])),
+    );
   };
 
   const clearAll = () => {
@@ -186,8 +201,11 @@ const EditServicesScreen = () => {
 
   if (loading) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#4c8bf5" />
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
       </Box>
     );
   }
@@ -198,19 +216,22 @@ const EditServicesScreen = () => {
         className="flex-1"
         style={{ backgroundColor: colors.background }}
       >
-        <Animated.View style={{ opacity: fadeAnim }}>
+        <Animated.View className="flex-1" style={{ opacity: fadeAnim }}>
           <Box className="flex-row gap-4 items-center px-3 mt-5">
             <Pressable onPress={() => router.back()} className="ml-2">
-              <Icon as={ArrowLeft} size="xl" />
+              <Icon as={ArrowLeft} size="xl" color={colors.text} />
             </Pressable>
             <Text
               className="text-2xl font-semibold"
-              style={{ fontFamily: "Sen_Bold", color: colors.text }}
+              style={{ fontFamily: Fonts.semibold, color: colors.text }}
             >
               Edit Services
             </Text>
           </Box>
-          <ScrollView contentContainerStyle={{ padding: 20 }}>
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ padding: 20, paddingBottom: 8 }}
+          >
             {servicesLoading ? (
               <Box className="flex-1 items-center justify-center my-10">
                 <ActivityIndicator size="large" color={colors.primary} />
@@ -220,172 +241,188 @@ const EditServicesScreen = () => {
                 <Box className="flex-row justify-between mt-2">
                   <Button
                     onPress={() => clearAll()}
-                    className="bg-black/10 w-[120px] h-10 rounded-md active:opacity-70"
+                    className="w-[120px] h-10 rounded-lg border active:opacity-70"
                     style={{
-                      backgroundColor: colors.secondaryBackgroundGradient,
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
                     }}
                   >
                     <Text
-                      style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                      className="text-lg font-semibold text-center"
+                      style={{
+                        fontFamily: Fonts.semibold,
+                        color: colors.primary,
+                      }}
+                      className="text-[14px] text-center"
                     >
                       Clear all
                     </Text>
                   </Button>
                   <Button
-                    onPress={() => collapseAll()}
-                    className="bg-black/10 w-[120px] h-10 rounded-md active:opacity-70"
+                    onPress={toggleAll}
+                    className="w-[120px] h-10 rounded-lg border active:opacity-70"
                     style={{
-                      backgroundColor: colors.secondaryBackgroundGradient,
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
                     }}
                   >
                     <Text
-                      style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                      className="text-l font-semibold text-center"
+                      style={{
+                        fontFamily: Fonts.semibold,
+                        color: colors.primary,
+                      }}
+                      className="text-[14px] text-center"
                     >
-                      Collapse all
+                      {anyExpanded ? "Collapse all" : "Expand all"}
                     </Text>
                   </Button>
                 </Box>
 
-                <Box
-                  style={{
-                    maxHeight: 450,
-                    backgroundColor: colors.background,
-                  }}
-                  className="mb-4 mt-2 rounded-lg p-4"
-                >
-                  <ScrollView showsVerticalScrollIndicator={false}>
-                    {sortedServices.map((service) => {
-                      const isExpanded = expandedServices[service.id];
-                      const isSelected = selectedServices.includes(service.id);
+                <Box className="mb-1 mt-2">
+                  {sortedServices.map((service) => {
+                    const isExpanded = expandedServices[service.id];
+                    const isSelected = selectedServices.includes(service.id);
 
-                      return (
-                        <Box
-                          key={`${service.id}-${resetCounter}`}
-                          className={`rounded-xl px-4 py-3 my-3 shadow-xl border-white/50 border`}
-                          style={{
-                            backgroundColor: isSelected
-                              ? colors.secondaryBackground
-                              : colors.background,
-                            elevation: 20,
-                          }}
-                        >
-                          {/* Top Row */}
-                          <Box className="flex-row items-center justify-between">
-                            <Checkbox
-                              value={service.id}
-                              size="md"
-                              isChecked={isSelected}
-                              onChange={(checked: boolean) => {
-                                setSelectedServices((prev) => {
-                                  if (checked) {
-                                    return prev.includes(service.id)
-                                      ? prev
-                                      : [...prev, service.id];
-                                  } else {
-                                    return prev.filter(
-                                      (id) => id !== service.id,
-                                    );
-                                  }
-                                });
-                              }}
-                            >
-                              <CheckboxIndicator className="mr-2">
-                                <CheckboxIcon
-                                  as={Check}
-                                  width={15}
-                                  color={
-                                    isSelected
-                                      ? colors.secondaryBackground
-                                      : "white"
-                                  }
-                                />
-                              </CheckboxIndicator>
-
-                              <CheckboxLabel
-                                style={{
-                                  fontFamily: "Sen_Bold",
-                                  color: colors.text,
-                                }}
-                                className="text-lg bg-transparent"
-                              >
-                                {service.service_name}
-                              </CheckboxLabel>
-                            </Checkbox>
-
-                            {/* Expand / Collapse Button */}
-                            <Button
-                              onPress={() => toggleExpand(service.id)}
-                              className="ml-2 h-8 active:opacity-70"
+                    return (
+                      <Reanimated.View
+                        key={`${service.id}-${resetCounter}`}
+                        layout={LinearTransition.duration(200)}
+                        className={`rounded-xl px-4 py-3 my-2 border`}
+                        style={{
+                          backgroundColor: isSelected
+                            ? colors.primarySoft
+                            : colors.surface,
+                          borderColor: isSelected
+                            ? colors.primary
+                            : colors.border,
+                          borderWidth: isSelected ? 2 : 1,
+                        }}
+                      >
+                        {/* Top Row */}
+                        <Box className="flex-row items-start justify-between">
+                          <Checkbox
+                            className="flex-1 items-start"
+                            value={service.id}
+                            size="md"
+                            isChecked={isSelected}
+                            onChange={(checked: boolean) => {
+                              setSelectedServices((prev) => {
+                                if (checked) {
+                                  return prev.includes(service.id)
+                                    ? prev
+                                    : [...prev, service.id];
+                                } else {
+                                  return prev.filter((id) => id !== service.id);
+                                }
+                              });
+                            }}
+                          >
+                            <CheckboxIndicator
+                              className="mr-2"
                               style={{
-                                backgroundColor: !isSelected
-                                  ? colors.background
-                                  : colors.secondaryBackground,
+                                backgroundColor: isSelected
+                                  ? colors.primary
+                                  : colors.surface,
+                                borderColor: isSelected
+                                  ? colors.primary
+                                  : colors.borderStrong,
                               }}
                             >
-                              <ButtonIcon
-                                color={colors.text}
-                                as={isExpanded ? ChevronUp : ChevronDown}
+                              <CheckboxIcon
+                                as={Check}
+                                width={15}
+                                color={colors.textInverted}
                               />
-                            </Button>
-                          </Box>
+                            </CheckboxIndicator>
 
-                          {/* Expanded Section */}
-                          {isExpanded && (
-                            <Box
-                              className={`mt-2 pt-3 border-t ${
-                                isSelected
-                                  ? "border-white/80"
-                                  : "border-white/80"
-                              }`}
+                            <CheckboxLabel
+                              style={{
+                                fontFamily: Fonts.semibold,
+                                color: colors.text,
+                                flexShrink: 1,
+                              }}
+                              className="text-[16px] bg-transparent leading-6"
                             >
-                              <Text
-                                style={{
-                                  fontFamily: "Sen",
-                                  color: isSelected ? "white" : colors.text,
-                                }}
-                              >
-                                {service.description}
-                              </Text>
+                              {service.service_name}
+                            </CheckboxLabel>
+                          </Checkbox>
 
-                              <Text
-                                style={{
-                                  fontFamily: "Sen",
-                                  color: isSelected ? "white" : colors.text,
-                                }}
-                              >
-                                Duration: {service.duration}{" "}
-                                {service.duration_type}
-                              </Text>
-                            </Box>
-                          )}
+                          {/* Expand / Collapse Button */}
+                          <Button
+                            onPress={() => toggleExpand(service.id)}
+                            className="ml-2 h-8 shrink-0 active:opacity-70"
+                            style={{ backgroundColor: "transparent" }}
+                          >
+                            <AnimatedChevron
+                              expanded={!!isExpanded}
+                              color={colors.icon}
+                            />
+                          </Button>
                         </Box>
-                      );
-                    })}
-                  </ScrollView>
+
+                        {/* Expanded Section */}
+                        {isExpanded && (
+                          <Reanimated.View
+                            entering={FadeIn.duration(180)}
+                            exiting={FadeOut.duration(120)}
+                            className="mt-2 pt-3 border-t"
+                            style={{ borderTopColor: colors.border }}
+                          >
+                            <Text
+                              style={{
+                                fontFamily: Fonts.regular,
+                                color: colors.text,
+                              }}
+                            >
+                              {service.description}
+                            </Text>
+
+                            <Text
+                              style={{
+                                fontFamily: Fonts.regular,
+                                color: colors.text,
+                              }}
+                            >
+                              Duration: {service.duration}{" "}
+                              {service.duration_type}
+                            </Text>
+                          </Reanimated.View>
+                        )}
+                      </Reanimated.View>
+                    );
+                  })}
                 </Box>
               </>
             )}
+          </ScrollView>
+          <Box
+            className="px-5 pt-3 pb-5 border-t"
+            style={{
+              borderTopColor: colors.border,
+              backgroundColor: colors.background,
+            }}
+          >
             <Button
               onPress={handleSave}
               style={{
                 backgroundColor: colors.secondaryBackgroundGradient,
               }}
-              className=" h-16 rounded-[14px] items-center shadow-lg active:opacity-70"
+              className="h-14 rounded-xl items-center active:opacity-90"
             >
               {loading ? (
-                <ButtonSpinner color="black" />
+                <ButtonSpinner color={colors.textInverted} />
               ) : (
                 <ButtonText
-                  style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                  className="text-xl"
+                  style={{
+                    fontFamily: Fonts.semibold,
+                    color: colors.textInverted,
+                  }}
+                  className="text-[17px]"
                 >
                   Save Changes
                 </ButtonText>
               )}
             </Button>
-          </ScrollView>
+          </Box>
         </Animated.View>
       </SafeAreaView>
     </SafeAreaProvider>

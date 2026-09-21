@@ -16,6 +16,7 @@ import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Typography";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { router, useLocalSearchParams } from "expo-router";
@@ -227,7 +228,7 @@ const AddressFormScreen = () => {
   if (loading) {
     return (
       <Box className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </Box>
     );
   }
@@ -272,10 +273,10 @@ const AddressFormScreen = () => {
         }}
       >
         {isGeocoding ? (
-          <ButtonSpinner color="black" />
+          <ButtonSpinner color={colors.textInverted} />
         ) : (
           <ButtonText
-            style={{ fontFamily: "Sen_Bold", color: colors.text }}
+            style={{ fontFamily: Fonts.semibold, color: colors.textInverted }}
             className="text-xl"
           >
             Confirm Location
@@ -291,29 +292,29 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase"
-              style={{ fontFamily: "Sen", color: colors.text }}
+              className="text-[12px] uppercase"
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.textSecondary,
+                letterSpacing: 0.8,
+              }}
             >
               Address Line 1
             </FormControlLabelText>
           </FormControlLabel>
           <Input
             style={{
-              elevation: 5,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.35,
-              shadowRadius: 4,
-              backgroundColor: colors.secondaryBackground,
+              backgroundColor: colors.inputBackground,
+              borderColor: colors.border,
             }}
-            className="my-1 rounded-xl h-16 pl-2 border-0"
+            className="my-1 rounded-xl h-14 pl-3 border"
             size="md"
           >
             <InputField
-              style={{ color: colors.text, fontFamily: "Sen" }}
+              style={{ color: colors.text, fontFamily: Fonts.regular }}
               placeholder="Address Line 1"
-              placeholderTextColor={colors.text}
-              cursorColor={colors.text}
+              placeholderTextColor={colors.textMuted}
+              cursorColor={colors.cursorColor}
               value={address.address_line_1}
               onChangeText={(v) => handleAddressChange("address_line_1", v)}
             />
@@ -323,28 +324,28 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase "
-              style={{ fontFamily: "Sen-Regular", color: colors.text }}
+              className="text-[12px] uppercase"
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.textSecondary,
+                letterSpacing: 0.8,
+              }}
             >
               Address Line 2 (Optional)
             </FormControlLabelText>
           </FormControlLabel>
           <Input
             style={{
-              elevation: 5,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.35,
-              shadowRadius: 4,
-              backgroundColor: colors.secondaryBackground,
+              backgroundColor: colors.inputBackground,
+              borderColor: colors.border,
             }}
-            className="my-1 rounded-xl h-16 pl-2 border-0"
+            className="my-1 rounded-xl h-14 pl-3 border"
             size="md"
           >
             <InputField
-              placeholderTextColor={colors.text}
-              cursorColor={colors.text}
-              style={{ color: colors.text, fontFamily: "Sen" }}
+              placeholderTextColor={colors.textMuted}
+              cursorColor={colors.cursorColor}
+              style={{ color: colors.text, fontFamily: Fonts.regular }}
               placeholder="Address Line 2"
               value={address.address_line_2}
               onChangeText={(v) => handleAddressChange("address_line_2", v)}
@@ -355,28 +356,28 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase "
-              style={{ fontFamily: "Sen-Regular", color: colors.text }}
+              className="text-[12px] uppercase"
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.textSecondary,
+                letterSpacing: 0.8,
+              }}
             >
               City
             </FormControlLabelText>
           </FormControlLabel>
           <Input
             style={{
-              elevation: 5,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.35,
-              shadowRadius: 4,
-              backgroundColor: colors.secondaryBackground,
+              backgroundColor: colors.inputBackground,
+              borderColor: colors.border,
             }}
-            className="my-1 rounded-xl h-16 pl-2 border-0"
+            className="my-1 rounded-xl h-14 pl-3 border"
             size="md"
           >
             <InputField
-              placeholderTextColor={colors.text}
-              cursorColor={colors.text}
-              style={{ color: colors.text, fontFamily: "Sen" }}
+              placeholderTextColor={colors.textMuted}
+              cursorColor={colors.cursorColor}
+              style={{ color: colors.text, fontFamily: Fonts.regular }}
               placeholder="City"
               value={address.city}
               onChangeText={(v) => handleAddressChange("city", v)}
@@ -387,28 +388,28 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase "
-              style={{ fontFamily: "Sen-Regular", color: colors.text }}
+              className="text-[12px] uppercase"
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.textSecondary,
+                letterSpacing: 0.8,
+              }}
             >
               State
             </FormControlLabelText>
           </FormControlLabel>
           <Input
             style={{
-              elevation: 5,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.35,
-              shadowRadius: 4,
-              backgroundColor: colors.secondaryBackground,
+              backgroundColor: colors.inputBackground,
+              borderColor: colors.border,
             }}
-            className="my-1 rounded-xl h-16 pl-2 border-0"
+            className="my-1 rounded-xl h-14 pl-3 border"
             size="md"
           >
             <InputField
-              placeholderTextColor={colors.text}
-              cursorColor={colors.text}
-              style={{ color: colors.text, fontFamily: "Sen" }}
+              placeholderTextColor={colors.textMuted}
+              cursorColor={colors.cursorColor}
+              style={{ color: colors.text, fontFamily: Fonts.regular }}
               placeholder="State"
               value={address.state}
               onChangeText={(v) => handleAddressChange("state", v)}
@@ -419,28 +420,28 @@ const AddressFormScreen = () => {
         <FormControl size="lg" className="w-full">
           <FormControlLabel>
             <FormControlLabelText
-              className="text-md uppercase "
-              style={{ fontFamily: "Sen-Regular", color: colors.text }}
+              className="text-[12px] uppercase"
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.textSecondary,
+                letterSpacing: 0.8,
+              }}
             >
               Pincode
             </FormControlLabelText>
           </FormControlLabel>
           <Input
             style={{
-              elevation: 5,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.35,
-              shadowRadius: 4,
-              backgroundColor: colors.secondaryBackground,
+              backgroundColor: colors.inputBackground,
+              borderColor: colors.border,
             }}
-            className="my-1 rounded-xl h-16 pl-2 border-0"
+            className="my-1 rounded-xl h-14 pl-3 border"
             size="md"
           >
             <InputField
-              placeholderTextColor={colors.text}
-              cursorColor={colors.text}
-              style={{ color: colors.text, fontFamily: "Sen" }}
+              placeholderTextColor={colors.textMuted}
+              cursorColor={colors.cursorColor}
+              style={{ color: colors.text, fontFamily: Fonts.regular }}
               placeholder="Pincode"
               value={address.pincode}
               maxLength={6}
@@ -452,9 +453,15 @@ const AddressFormScreen = () => {
       </VStack>
 
       {error ? (
-        <Box className="bg-white/10 rounded-lg border border-white/20 p-2 mb-4">
+        <Box
+          className="rounded-xl border p-3 mb-4"
+          style={{
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          }}
+        >
           <Text
-            style={{ fontFamily: "Sen", color: colors.error }}
+            style={{ fontFamily: Fonts.regular, color: colors.error }}
             className="text-center text-[14px]"
           >
             {error}
@@ -466,7 +473,12 @@ const AddressFormScreen = () => {
         {isEditMode && (
           <Button
             onPress={() => setStep(1)}
-            className="py-3 bg-white/20 rounded-xl h-fit"
+            className="py-3 rounded-xl h-fit"
+            style={{
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
             isDisabled={loading}
           >
             <ButtonIcon
@@ -475,7 +487,7 @@ const AddressFormScreen = () => {
               className="mr-2 active:opacity-70"
             />
             <ButtonText
-              style={{ fontFamily: "Sen_Bold", color: colors.text }}
+              style={{ fontFamily: Fonts.semibold, color: colors.text }}
               className="text-base "
             >
               Change address
@@ -492,10 +504,13 @@ const AddressFormScreen = () => {
             }}
           >
             {loading ? (
-              <ButtonSpinner color="black" />
+              <ButtonSpinner color={colors.textInverted} />
             ) : (
               <ButtonText
-                style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                style={{
+                  fontFamily: Fonts.semibold,
+                  color: colors.textInverted,
+                }}
                 className="text-xl"
               >
                 Save Changes
@@ -505,11 +520,14 @@ const AddressFormScreen = () => {
 
           {isEditMode && (
             <Button
-              className="py-4 rounded-xl h-full w-15"
+              className="py-4 rounded-xl h-full w-15 border"
               onPress={handleDelete}
-              style={{ backgroundColor: colors.error }}
+              style={{
+                backgroundColor: colors.errorSoft,
+                borderColor: colors.error,
+              }}
             >
-              <Icon as={Trash} />
+              <Icon as={Trash} style={{ color: colors.error }} />
             </Button>
           )}
         </HStack>
@@ -530,11 +548,11 @@ const AddressFormScreen = () => {
             }
             className="ml-2"
           >
-            <Icon as={ArrowLeft} size="xl" />
+            <Icon as={ArrowLeft} size="xl" color={colors.text} />
           </Pressable>
           <Text
             className="text-2xl font-semibold"
-            style={{ fontFamily: "Sen_Bold", color: colors.text }}
+            style={{ fontFamily: Fonts.semibold, color: colors.text }}
           >
             {step === 1
               ? "Set Location"

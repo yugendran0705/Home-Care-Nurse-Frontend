@@ -181,9 +181,11 @@ module.exports = {
         jakarta: ["var(--font-plus-jakarta-sans)"],
         roboto: ["var(--font-roboto)"],
         code: ["var(--font-source-code-pro)"],
-        inter: ["var(--font-inter)"],
+        inter: ["Inter_400Regular"],
+        "inter-medium": ["Inter_500Medium"],
+        "inter-semibold": ["Inter_600SemiBold"],
+        "inter-bold": ["Inter_700Bold"],
         "space-mono": ["var(--font-space-mono)"],
-        sen: ["Sen"],
       },
       fontWeight: {
         extrablack: "950",

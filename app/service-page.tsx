@@ -4,7 +4,9 @@ import { HStack } from "@/components/ui/hstack";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { Divider } from "@/components/ui/divider";
 import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Typography";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -58,70 +60,109 @@ const ServiceScreen = () => {
 
   const renderOnError = () => (
     <>
-      <Text style={{ fontFamily: "Sen_Bold", color: colors.text }} size="5xl">
-        No Data!!
+      <Text
+        style={{ fontFamily: Fonts.semibold, color: colors.text }}
+        className="text-[20px] mt-10 text-center"
+      >
+        This service could not be loaded.
       </Text>
     </>
   );
 
   const renderDetails = () => (
     <>
-      <Box className="flex-row mt-10 items-center justify-center relative mb-6">
-        <Text style={{ fontFamily: "Sen_Bold", color: colors.text }} size="5xl">
+      <Box className="mt-6 mb-6">
+        <Text
+          style={{
+            fontFamily: Fonts.semibold,
+            color: colors.textSecondary,
+            letterSpacing: 0.8,
+          }}
+          className="text-[12px] uppercase mb-1"
+        >
+          Service
+        </Text>
+        <Text
+          style={{ fontFamily: Fonts.bold, color: colors.text }}
+          className="text-[28px] leading-9"
+        >
           {service?.service_name}
         </Text>
       </Box>
 
       <VStack
-        space="4xl"
-        style={{ backgroundColor: colors.secondaryBackground }}
-        className="p-4 rounded-lg mt-5"
+        space="xl"
+        style={{
+          backgroundColor: colors.secondaryBackground,
+          borderColor: colors.border,
+          shadowColor: colors.shadowColor,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
+          elevation: 2,
+        }}
+        className="p-5 rounded-2xl border"
       >
-        <VStack space="sm">
+        <VStack space="xs">
           <Text
-            style={{ fontFamily: "Sen_Bold", color: colors.text }}
-            size="2xl"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Description
           </Text>
 
-          <Text style={{ fontFamily: "Sen", color: colors.text }} size="xl">
+          <Text
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
+            className="text-[16px] leading-6"
+          >
             {service?.description}
           </Text>
         </VStack>
 
+        <Divider style={{ backgroundColor: colors.border }} />
+
         <HStack className="justify-between">
-          <VStack>
+          <VStack space="xs">
             <Text
-              style={{ fontFamily: "Sen_Bold", color: colors.text }}
-              size="2xl"
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.textSecondary,
+                letterSpacing: 0.8,
+              }}
+              className="text-[12px] uppercase"
             >
               Duration
             </Text>
 
             <Text
-              style={{ fontFamily: "Sen", color: colors.text }}
-              className="mt-1"
-              size="xl"
+              style={{ fontFamily: Fonts.semibold, color: colors.text }}
+              className="text-[18px]"
             >
               {service?.duration} {service?.duration_type}
             </Text>
           </VStack>
 
-          <VStack className="items-center">
+          <VStack space="xs" className="items-end">
             <Text
-              style={{ fontFamily: "Sen_Bold", color: colors.text }}
-              size="2xl"
+              style={{
+                fontFamily: Fonts.semibold,
+                color: colors.textSecondary,
+                letterSpacing: 0.8,
+              }}
+              className="text-[12px] uppercase"
             >
               Base Price
             </Text>
 
             <Text
-              style={{ fontFamily: "Sen", color: colors.text }}
-              className="mt-1"
-              size="xl"
+              style={{ fontFamily: Fonts.bold, color: colors.primary }}
+              className="text-[18px]"
             >
-              {service?.base_price}
+              ₹{service?.base_price}
             </Text>
           </VStack>
         </HStack>

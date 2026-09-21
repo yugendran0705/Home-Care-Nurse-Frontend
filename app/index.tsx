@@ -1,3 +1,5 @@
+import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Typography";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -15,7 +17,7 @@ const AuthGate = () => {
         setTimeout(() => {
           if (accessToken) {
             // If token exists, user is logged in.
-            router.replace("/(tabs)/profile");
+            router.replace("/(tabs)/bookings");
           } else {
             // If no token, send them to the sign-in screen.
             router.replace("/sign-in");
@@ -34,11 +36,11 @@ const AuthGate = () => {
   return (
     // Show a loading indicator while we check the auth status
     <LinearGradient
-      colors={["#4c669f", "#3b5998", "#192f6a"]}
+      colors={[Colors.light.gradientStart, Colors.light.gradientEnd]}
       style={styles.container}
     >
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#ffffff" />
+        <ActivityIndicator size="large" color={Colors.light.textInverted} />
         <Text style={styles.text}>Checking authentication...</Text>
       </View>
     </LinearGradient>
@@ -53,8 +55,9 @@ const styles = StyleSheet.create({
   },
   text: {
     marginTop: 16,
-    color: "#ffffff",
+    color: Colors.light.textInverted,
     fontSize: 16,
+    fontFamily: Fonts.regular,
   },
 });
 

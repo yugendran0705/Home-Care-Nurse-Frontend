@@ -5,6 +5,7 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Typography";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft, Plus } from "lucide-react-native";
@@ -126,8 +127,11 @@ const ManageAddressesScreen = () => {
 
   if (loading) {
     return (
-      <Box className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#4c8bf5" />
+      <Box
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
       </Box>
     );
   }
@@ -141,11 +145,11 @@ const ManageAddressesScreen = () => {
         <Animated.View style={{ opacity: fadeAnim }}>
           <Box className="flex-row gap-4 items-center px-3 mt-5">
             <Pressable onPress={() => router.back()} className="ml-2">
-              <Icon as={ArrowLeft} size="xl" color={colors.textInverted} />
+              <Icon as={ArrowLeft} size="xl" color={colors.text} />
             </Pressable>
             <Text
               className="text-2xl font-semibold "
-              style={{ fontFamily: "Sen_Bold", color: colors.textInverted }}
+              style={{ fontFamily: Fonts.semibold, color: colors.text }}
             >
               Manage Addresses
             </Text>
@@ -156,8 +160,8 @@ const ManageAddressesScreen = () => {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={["#000"]}
-                tintColor={"#fff"}
+                colors={[colors.primary]}
+                tintColor={colors.primary}
               />
             }
           >
@@ -166,37 +170,51 @@ const ManageAddressesScreen = () => {
                 key={addr.id}
                 style={{
                   backgroundColor: colors.secondaryBackground,
-                  borderWidth: addr.is_primary ? 2 : 0,
-                  borderColor: "#FBBF24",
+                  borderWidth: addr.is_primary ? 2 : 1,
+                  borderColor: addr.is_primary ? colors.primary : colors.border,
+                  shadowColor: colors.shadowColor,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 12,
+                  elevation: 2,
                 }}
-                className="rounded-xl p-4 mb-4"
+                className="rounded-2xl p-4 mb-4"
               >
                 <Box>
                   <Text
-                    style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                    style={{ fontFamily: Fonts.semibold, color: colors.text }}
                     className="text-[16px] mb-[4px]"
                   >
                     {addr.address_line_1}, {addr.address_line_2}
                   </Text>
                   <Text
-                    style={{ fontFamily: "Sen", color: colors.text }}
+                    style={{
+                      fontFamily: Fonts.regular,
+                      color: colors.textSecondary,
+                    }}
                     className="text-[14px]"
                   >
                     {addr.city}, {addr.pincode}
                   </Text>
                 </Box>
 
-                <Divider className="bg-gray-300 my-2" />
+                <Divider
+                  className="my-2"
+                  style={{ backgroundColor: colors.border }}
+                />
 
                 <Box className="flex flex-row items-center justify-end pt-[15px] relative">
                   {addr.is_primary && (
                     <Box
-                      style={{ backgroundColor: "#FBBF24" }}
-                      className=" absolute bottom-3 left-0 rounded-xl px-2 py-1"
+                      style={{ backgroundColor: colors.accent }}
+                      className=" absolute bottom-3 left-0 rounded-full px-3 py-1"
                     >
                       <Text
-                        style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                        className="text-xs"
+                        style={{
+                          fontFamily: Fonts.semibold,
+                          color: colors.text,
+                        }}
+                        className="text-[11px] uppercase"
                       >
                         Primary
                       </Text>
@@ -204,14 +222,17 @@ const ManageAddressesScreen = () => {
                   )}
                   {!addr.is_primary && (
                     <Button
-                      className="px-[15px] py-[8px] ml-[10px] rounded-[8px] active:opacity-70"
-                      style={{ backgroundColor: colors.background }}
+                      className="px-[15px] py-[8px] ml-[10px] rounded-lg border active:opacity-70"
+                      style={{
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      }}
                       onPress={() => handleSetPrimary(addr.id)}
                     >
                       <ButtonText
                         style={{
-                          fontFamily: "Sen_Bold",
-                          color: colors.text,
+                          fontFamily: Fonts.semibold,
+                          color: colors.primary,
                         }}
                       >
                         Set as Primary
@@ -219,8 +240,11 @@ const ManageAddressesScreen = () => {
                     </Button>
                   )}
                   <Button
-                    className="px-[15px] py-[8px] ml-[10px] rounded-[8px] active:opacity-70"
-                    style={{ backgroundColor: colors.background }}
+                    className="px-[15px] py-[8px] ml-[10px] rounded-lg border active:opacity-70"
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    }}
                     onPress={() =>
                       router.push({
                         pathname: "/address-form",
@@ -230,8 +254,8 @@ const ManageAddressesScreen = () => {
                   >
                     <ButtonText
                       style={{
-                        fontFamily: "Sen_Bold",
-                        color: colors.text,
+                        fontFamily: Fonts.semibold,
+                        color: colors.primary,
                       }}
                     >
                       Edit
@@ -248,9 +272,16 @@ const ManageAddressesScreen = () => {
               }}
               onPress={() => router.push("/address-form")}
             >
-              <ButtonIcon as={Plus} className="mr-[10px]" color={colors.text} />
+              <ButtonIcon
+                as={Plus}
+                className="mr-[10px]"
+                color={colors.textInverted}
+              />
               <ButtonText
-                style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                style={{
+                  fontFamily: Fonts.semibold,
+                  color: colors.textInverted,
+                }}
                 className=" text-[18px]"
               >
                 Add New Address

@@ -1,3 +1,4 @@
+import { AnimatedChevron } from "@/components/AnimatedChevron";
 import { Box } from "@/components/ui/box/index";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button/index";
 import {
@@ -21,6 +22,7 @@ import {
 import { Pressable } from "@/components/ui/pressable/index";
 import { Text } from "@/components/ui/text/index";
 import { Colors } from "@/constants/Colors";
+import { Fonts } from "@/constants/Typography";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker, {
   DateTimePickerEvent,
@@ -28,15 +30,7 @@ import DateTimePicker, {
 import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { router } from "expo-router";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Mars,
-  Venus,
-} from "lucide-react-native";
+import { ArrowLeft, ArrowRight, Check, Mars, Venus } from "lucide-react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -49,8 +43,11 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import Animated, {
   Easing,
+  FadeIn,
   FadeInRight,
+  FadeOut,
   FadeOutLeft,
+  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -122,11 +119,16 @@ export default function SignUpScreen() {
   const colors = Colors[colorScheme];
   const actionButtonShadow = {
     backgroundColor: colors.secondaryBackgroundGradient,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 4,
+    elevation: 4,
+    shadowColor: colors.primaryDeep,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+  };
+  const quietButtonStyle = {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
   };
 
   const normalizeErrorMessage = (value: unknown, fallback: string) => {
@@ -188,8 +190,16 @@ export default function SignUpScreen() {
     }));
   };
 
-  const collapseAll = () => {
-    setExpandedServices({});
+  const anyExpanded = Object.values(expandedServices).some(Boolean);
+
+  const toggleAll = () => {
+    if (anyExpanded) {
+      setExpandedServices({});
+      return;
+    }
+    setExpandedServices(
+      Object.fromEntries(services.map((service) => [service.id, true])),
+    );
   };
 
   const clearAll = () => {
@@ -517,37 +527,37 @@ export default function SignUpScreen() {
   const renderStepOne = () => (
     <>
       <Text
-        style={{ fontFamily: "Sen_Bold", color: colors.text }}
-        className="text-2xl font-semibold  mb-5 text-center"
+        style={{ fontFamily: Fonts.semibold, color: colors.text }}
+        className="text-[20px] mb-6 text-center"
       >
         Step 1: Personal Details
       </Text>
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             First Name
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: Dhruva"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.first_name}
             onChangeText={(text) => handleFormChange("first_name", text)}
             type="text"
@@ -557,29 +567,29 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Last Name
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16  pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: U R"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.last_name}
             onChangeText={(text) => handleFormChange("last_name", text)}
             type="text"
@@ -589,29 +599,29 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Email
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: example@gmail.com"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.email}
             onChangeText={(text) => handleFormChange("email", text)}
             autoCapitalize="none"
@@ -623,30 +633,30 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Password
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 pl-2 pr-4 border-0"
+          className="my-1 rounded-xl h-14 pl-3 pr-4 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             secureTextEntry={!isPasswordVisible}
             placeholder="eg: ********"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.password}
             onChangeText={(text) => handleFormChange("password", text)}
           />
@@ -661,29 +671,29 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Phone
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: 9876543210"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.phone_number}
             onChangeText={(text) => handleFormChange("phone_number", text)}
             keyboardType="phone-pad"
@@ -694,24 +704,24 @@ export default function SignUpScreen() {
 
       <Pressable onPress={() => setShowDatePicker(true)}>
         <Text
-          style={{ fontFamily: "Sen", color: colors.text }}
-          className="text-md uppercase font-Sen mb-2"
+          style={{
+            fontFamily: Fonts.semibold,
+            color: colors.textSecondary,
+            letterSpacing: 0.8,
+          }}
+          className="text-[12px] uppercase mb-2"
         >
           Date of birth
         </Text>
         <Box
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="h-16 rounded-[14px] px-[15px] mb-[15px] mt-1 justify-center"
+          className="h-14 rounded-xl px-[15px] mb-[15px] mt-1 justify-center border"
         >
           <Text
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             className="text-md"
           >
             {formData.date_of_birth || "2000-00-00"}
@@ -728,8 +738,12 @@ export default function SignUpScreen() {
         />
       )}
       <Text
-        style={{ fontFamily: "Sen", color: colors.text }}
-        className="text-md uppercase font-Sen mb-2"
+        style={{
+          fontFamily: Fonts.semibold,
+          color: colors.textSecondary,
+          letterSpacing: 0.8,
+        }}
+        className="text-[12px] uppercase mb-2"
       >
         Gender
       </Text>
@@ -741,23 +755,26 @@ export default function SignUpScreen() {
             <Button
               key={g}
               onPress={() => handleFormChange("gender", g)}
-              className={`h-16 flex-1 rounded-xl flex-row items-center justify-center bg-transparent border border-white/50`}
+              className={`h-14 flex-1 rounded-xl flex-row items-center justify-center`}
               variant="solid"
               style={{
-                backgroundColor: !isActive
-                  ? colors.background
-                  : colors.secondaryBackground,
+                backgroundColor: isActive ? colors.primaryTint : colors.surface,
+                borderWidth: isActive ? 2 : 1,
+                borderColor: isActive ? colors.primary : colors.border,
               }}
             >
               <ButtonIcon
                 as={g === "Male" ? Mars : Venus}
                 className={`mr-2 `}
-                style={{ color: colors.text }}
+                style={{ color: isActive ? colors.primaryDark : colors.icon }}
               />
 
               <ButtonText
-                style={{ fontFamily: "Sen", color: colors.text }}
-                className={`text-[16px] font-medium `}
+                style={{
+                  fontFamily: isActive ? Fonts.semibold : Fonts.regular,
+                  color: isActive ? colors.primaryDark : colors.text,
+                }}
+                className={`text-[16px]`}
               >
                 {g}
               </ButtonText>
@@ -771,37 +788,37 @@ export default function SignUpScreen() {
   const renderStepTwo = () => (
     <>
       <Text
-        style={{ fontFamily: "Sen_Bold", color: colors.text }}
-        className="text-2xl font-semibold mb-5 text-center"
+        style={{ fontFamily: Fonts.semibold, color: colors.text }}
+        className="text-[20px] mb-6 text-center"
       >
         Step 2: Professional Details
       </Text>
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className=" text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             License Number
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: RN-2026-001"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.license_number}
             onChangeText={(text) => handleFormChange("license_number", text)}
           />
@@ -811,29 +828,29 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Years of Experience
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: 5"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.years_of_experience}
             onChangeText={(text) =>
               handleFormChange("years_of_experience", text)
@@ -846,29 +863,29 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Profile Picture URL
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: https://..."
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.profile_picture_url}
             onChangeText={(text) =>
               handleFormChange("profile_picture_url", text)
@@ -881,34 +898,34 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Short Bio
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-24  pl-2 border-0"
+          className="my-1 rounded-xl h-24 pl-3 border"
           size="md"
         >
           <InputField
             style={{
-              fontFamily: "Sen",
+              fontFamily: Fonts.regular,
               textAlignVertical: "top",
               color: colors.text,
             }}
             className="mt-4"
             placeholder="Write a short bio (optional)"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.bio}
             onChangeText={(text) => handleFormChange("bio", text)}
             multiline
@@ -921,19 +938,15 @@ export default function SignUpScreen() {
   const renderStepThree = () => (
     <Box className="flex-1 min-h-[500px]">
       <Text
-        style={{ fontFamily: "Sen_Bold", color: colors.text }}
-        className="text-2xl font-semibold mb-5 text-center"
+        style={{ fontFamily: Fonts.semibold, color: colors.text }}
+        className="text-[20px] mb-6 text-center"
       >
         Step 3: Pin Your Location
       </Text>
       <Box
         style={{
-          elevation: 5,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.35,
-          shadowRadius: 4,
-          backgroundColor: colors.secondaryBackground,
+          backgroundColor: colors.inputBackground,
+          borderColor: colors.border,
         }}
         className="flex-1 rounded-[14px] overflow-hidden justify-center items-center mb-5"
       >
@@ -987,10 +1000,10 @@ export default function SignUpScreen() {
         isDisabled={loading}
       >
         {isGeocoding ? (
-          <ActivityIndicator color="#192f6a" />
+          <ActivityIndicator color={colors.textInverted} />
         ) : (
           <Text
-            style={{ fontFamily: "Sen_Bold", color: colors.text }}
+            style={{ fontFamily: Fonts.semibold, color: colors.textInverted }}
             className="text-[18px]"
           >
             Confirm Location
@@ -1003,37 +1016,37 @@ export default function SignUpScreen() {
   const renderStepFour = () => (
     <>
       <Text
-        style={{ fontFamily: "Sen_Bold", color: colors.text }}
-        className="text-2xl font-semibold mb-5 text-center"
+        style={{ fontFamily: Fonts.semibold, color: colors.text }}
+        className="text-[20px] mb-6 text-center"
       >
         Step 4: Confirm Address
       </Text>
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Address Line 1
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: 221B Baker Street"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.address.address_line_1}
             onChangeText={(text) => handleAddressChange("address_line_1", text)}
           />
@@ -1043,29 +1056,29 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             City
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: Mumbai"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.address.city}
             onChangeText={(text) => handleAddressChange("city", text)}
           />
@@ -1075,29 +1088,29 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className="text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             State
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: Maharashtra"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.address.state}
             onChangeText={(text) => handleAddressChange("state", text)}
           />
@@ -1107,29 +1120,29 @@ export default function SignUpScreen() {
       <FormControl size="lg" className="w-full mb-2">
         <FormControlLabel>
           <FormControlLabelText
-            style={{ fontFamily: "Sen", color: colors.text }}
-            className=" text-md uppercase font-Sen"
+            style={{
+              fontFamily: Fonts.semibold,
+              color: colors.textSecondary,
+              letterSpacing: 0.8,
+            }}
+            className="text-[12px] uppercase"
           >
             Pincode
           </FormControlLabelText>
         </FormControlLabel>
         <Input
           style={{
-            elevation: 5,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.35,
-            shadowRadius: 4,
-            backgroundColor: colors.secondaryBackground,
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border,
           }}
-          className="my-1 rounded-xl h-16 bg-[#F0F5FA] pl-2 border-0"
+          className="my-1 rounded-xl h-14 pl-3 border"
           size="md"
         >
           <InputField
-            style={{ fontFamily: "Sen", color: colors.text }}
+            style={{ fontFamily: Fonts.regular, color: colors.text }}
             placeholder="eg: 400001"
-            placeholderTextColor={colors.text}
-            cursorColor={colors.text}
+            placeholderTextColor={colors.textMuted}
+            cursorColor={colors.cursorColor}
             value={formData.address.pincode}
             onChangeText={(text) => handleAddressChange("pincode", text)}
             keyboardType="number-pad"
@@ -1142,70 +1155,73 @@ export default function SignUpScreen() {
   const renderStepFive = () => (
     <>
       <Text
-        style={{ fontFamily: "Sen_Bold", color: colors.text }}
+        style={{ fontFamily: Fonts.semibold, color: colors.text }}
         className="text-2xl font-semibold mb-1 text-center"
       >
         Step 5: Choose Services
       </Text>
       {servicesLoading ? (
         <Box className="flex-1 items-center justify-center my-10">
-          <ActivityIndicator size="large" color="#ffffff" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </Box>
       ) : (
         <>
           <Box className="flex-row justify-between mt-6">
             <Button
               onPress={() => clearAll()}
-              className="bg-black/10 w-[120px] h-10 rounded-md active:opacity-70"
-              style={{ backgroundColor: colors.secondaryBackgroundGradient }}
+              className="w-[120px] h-10 rounded-lg border active:opacity-70"
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              }}
             >
               <Text
-                style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                className="text-lg font-semibold text-center"
+                style={{ fontFamily: Fonts.semibold, color: colors.primary }}
+                className="text-[14px] text-center"
               >
                 Clear all
               </Text>
             </Button>
             <Button
-              onPress={() => collapseAll()}
-              className="bg-black/10 w-[120px] h-10 rounded-md active:opacity-70"
-              style={{ backgroundColor: colors.secondaryBackgroundGradient }}
+              onPress={toggleAll}
+              className="w-[120px] h-10 rounded-lg border active:opacity-70"
+              style={{
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              }}
             >
               <Text
-                style={{ fontFamily: "Sen_Bold", color: colors.text }}
-                className="text-l font-semibold text-center"
+                style={{ fontFamily: Fonts.semibold, color: colors.primary }}
+                className="text-[14px] text-center"
               >
-                Collapse all
+                {anyExpanded ? "Collapse all" : "Expand all"}
               </Text>
             </Button>
           </Box>
 
-          <Box
-            style={{
-              maxHeight: 450,
-              backgroundColor: colors.background,
-            }}
-            className="mb-4 mt-2 rounded-lg p-4"
-          >
+          <Box style={{ maxHeight: 450 }} className="mb-4 mt-2">
             <ScrollView showsVerticalScrollIndicator={false}>
               {sortedServices.map((service) => {
                 const isExpanded = expandedServices[service.id];
                 const isSelected = selectedServices.includes(service.id);
 
                 return (
-                  <Box
+                  <Animated.View
                     key={`${service.id}-${resetCounter}`}
-                    className={`rounded-xl px-4 py-3 my-3 shadow-xl border-white/50 border`}
+                    layout={LinearTransition.duration(200)}
+                    className={`rounded-xl px-4 py-3 my-2 border`}
                     style={{
                       backgroundColor: isSelected
-                        ? colors.secondaryBackground
-                        : colors.background,
-                      elevation: 20,
+                        ? colors.primarySoft
+                        : colors.surface,
+                      borderColor: isSelected ? colors.primary : colors.border,
+                      borderWidth: isSelected ? 2 : 1,
                     }}
                   >
                     {/* Top Row */}
-                    <Box className="flex-row items-center justify-between">
+                    <Box className="flex-row items-start justify-between">
                       <Checkbox
+                        className="flex-1 items-start"
                         value={service.id}
                         size="md"
                         isChecked={isSelected}
@@ -1221,22 +1237,31 @@ export default function SignUpScreen() {
                           });
                         }}
                       >
-                        <CheckboxIndicator className="mr-2">
+                        <CheckboxIndicator
+                          className="mr-2"
+                          style={{
+                            backgroundColor: isSelected
+                              ? colors.primary
+                              : colors.surface,
+                            borderColor: isSelected
+                              ? colors.primary
+                              : colors.borderStrong,
+                          }}
+                        >
                           <CheckboxIcon
                             as={Check}
                             width={15}
-                            color={
-                              isSelected ? colors.secondaryBackground : "white"
-                            }
+                            color={colors.textInverted}
                           />
                         </CheckboxIndicator>
 
                         <CheckboxLabel
                           style={{
-                            fontFamily: "Sen_Bold",
+                            fontFamily: Fonts.semibold,
                             color: colors.text,
+                            flexShrink: 1,
                           }}
-                          className="text-lg bg-transparent"
+                          className="text-[16px] bg-transparent leading-6"
                         >
                           {service.service_name}
                         </CheckboxLabel>
@@ -1245,31 +1270,28 @@ export default function SignUpScreen() {
                       {/* Expand / Collapse Button */}
                       <Button
                         onPress={() => toggleExpand(service.id)}
-                        className="ml-2 h-8 active:opacity-70"
-                        style={{
-                          backgroundColor: !isSelected
-                            ? colors.background
-                            : colors.secondaryBackground,
-                        }}
+                        className="ml-2 h-8 shrink-0 active:opacity-70"
+                        style={{ backgroundColor: "transparent" }}
                       >
-                        <ButtonIcon
-                          color={colors.text}
-                          as={isExpanded ? ChevronUp : ChevronDown}
+                        <AnimatedChevron
+                          expanded={!!isExpanded}
+                          color={colors.icon}
                         />
                       </Button>
                     </Box>
 
                     {/* Expanded Section */}
                     {isExpanded && (
-                      <Box
-                        className={`mt-2 pt-3 border-t ${
-                          isSelected ? "border-white/80" : "border-white/80"
-                        }`}
+                      <Animated.View
+                        entering={FadeIn.duration(180)}
+                        exiting={FadeOut.duration(120)}
+                        className="mt-2 pt-3 border-t"
+                        style={{ borderTopColor: colors.border }}
                       >
                         <Text
                           style={{
-                            fontFamily: "Sen",
-                            color: isSelected ? "white" : colors.text,
+                            fontFamily: Fonts.regular,
+                            color: colors.text,
                           }}
                         >
                           {service.description}
@@ -1277,15 +1299,15 @@ export default function SignUpScreen() {
 
                         <Text
                           style={{
-                            fontFamily: "Sen",
-                            color: isSelected ? "white" : colors.text,
+                            fontFamily: Fonts.regular,
+                            color: colors.text,
                           }}
                         >
                           Duration: {service.duration} {service.duration_type}
                         </Text>
-                      </Box>
+                      </Animated.View>
                     )}
-                  </Box>
+                  </Animated.View>
                 );
               })}
             </ScrollView>
@@ -1296,10 +1318,13 @@ export default function SignUpScreen() {
   );
 
   return (
-    <LinearGradient colors={["#1a1a1a", "#000000"]} className="flex-1">
-      <SafeAreaView
+    <SafeAreaView
+      className="flex-1"
+      style={{ backgroundColor: colors.background }}
+    >
+      <LinearGradient
+        colors={[colors.primaryTint, colors.background]}
         className="flex-1"
-        style={{ backgroundColor: colors.background }}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -1322,7 +1347,7 @@ export default function SignUpScreen() {
               exiting={FadeOutLeft.duration(200).easing(Easing.in(Easing.exp))}
             >
               <Text
-                style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                style={{ fontFamily: Fonts.bold, color: colors.text }}
                 className="text-[28px] text-center mb-[30px]"
               >
                 Create Account
@@ -1335,9 +1360,15 @@ export default function SignUpScreen() {
               {step === 5 && renderStepFive()}
 
               {error ? (
-                <Box className="bg-white/70 rounded-2xl border border-white/20">
+                <Box
+                  className="rounded-2xl border px-3"
+                  style={{
+                    backgroundColor: colors.errorSoft,
+                    borderColor: colors.error,
+                  }}
+                >
                   <Text
-                    style={{ fontFamily: "Sen", color: colors.error }}
+                    style={{ fontFamily: Fonts.regular, color: colors.error }}
                     className=" text-center my-[10px] text-[14px]"
                   >
                     {error}
@@ -1349,14 +1380,17 @@ export default function SignUpScreen() {
                 <Box className="flex-row justify-center gap-10">
                   <Button
                     className="h-[55px] w-[120px] rounded-[14px] items-center active:opacity-70"
-                    style={actionButtonShadow}
+                    style={quietButtonStyle}
                     onPress={handlePrevStep}
                     onPressIn={handleButtonPressIn}
                     onPressOut={handleButtonPressOut}
                   >
-                    <ButtonIcon color={colors.text} as={ArrowLeft} />
+                    <ButtonIcon color={colors.textSecondary} as={ArrowLeft} />
                     <ButtonText
-                      style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                      style={{
+                        fontFamily: Fonts.semibold,
+                        color: colors.textSecondary,
+                      }}
                       size="xl"
                     >
                       Prev
@@ -1372,12 +1406,15 @@ export default function SignUpScreen() {
                       onPressOut={handleButtonPressOut}
                     >
                       <ButtonText
-                        style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                        style={{
+                          fontFamily: Fonts.semibold,
+                          color: colors.textInverted,
+                        }}
                         size="xl"
                       >
                         Next
                       </ButtonText>
-                      <ButtonIcon color={colors.text} as={ArrowRight} />
+                      <ButtonIcon color={colors.textInverted} as={ArrowRight} />
                     </Button>
                   ) : (
                     <Button
@@ -1389,10 +1426,13 @@ export default function SignUpScreen() {
                       onPressOut={handleButtonPressOut}
                     >
                       {loading ? (
-                        <ActivityIndicator color="#192f6a" />
+                        <ActivityIndicator color={colors.textInverted} />
                       ) : (
                         <ButtonText
-                          style={{ fontFamily: "Sen_Bold", color: colors.text }}
+                          style={{
+                            fontFamily: Fonts.semibold,
+                            color: colors.textInverted,
+                          }}
                           className="text-xl"
                         >
                           Sign Up
@@ -1405,7 +1445,7 @@ export default function SignUpScreen() {
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
-    </LinearGradient>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
