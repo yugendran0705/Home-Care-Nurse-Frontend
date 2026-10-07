@@ -3,8 +3,8 @@ import { WorkingHoursPanel } from "@/components/availability/WorkingHoursPanel";
 import { Box } from "@/components/ui/box";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Typography";
-import React, { useState } from "react";
-import { Pressable, Text, useColorScheme } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Animated, Pressable, Text, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const TABS = [
@@ -18,6 +18,15 @@ export default function ScheduleScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const colors = Colors[colorScheme];
   const [panel, setPanel] = useState<PanelKey>("hours");
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   return (
     <SafeAreaView
@@ -25,56 +34,58 @@ export default function ScheduleScreen() {
       style={{ backgroundColor: colors.background }}
       edges={["top", "left", "right"]}
     >
-      <Box className="px-5 pt-4">
-        <Text
-          className="text-2xl"
-          style={{ fontFamily: Fonts.bold, color: colors.text }}
-        >
-          Schedule
-        </Text>
-        <Text
-          style={{ fontFamily: Fonts.regular, color: colors.textSecondary }}
-          className="text-[14px] mt-1"
-        >
-          When patients can book you, and when they can&apos;t.
-        </Text>
+      <Animated.View className="flex-1" style={{ opacity: fadeAnim }}>
+        <Box className="px-5 pt-4">
+          <Text
+            className="text-2xl"
+            style={{ fontFamily: Fonts.bold, color: colors.text }}
+          >
+            Schedule
+          </Text>
+          <Text
+            style={{ fontFamily: Fonts.regular, color: colors.textSecondary }}
+            className="text-[14px] mt-1"
+          >
+            When patients can book you, and when they can&apos;t.
+          </Text>
 
-        <Box
-          className="flex-row mt-4 p-1 rounded-xl"
-          style={{ backgroundColor: colors.surfaceMuted }}
-        >
-          {TABS.map((tab) => {
-            const active = panel === tab.key;
-            return (
-              <Pressable
-                key={tab.key}
-                onPress={() => setPanel(tab.key)}
-                className="flex-1 py-2 rounded-lg items-center active:opacity-70"
-                style={{
-                  backgroundColor: active ? colors.surface : "transparent",
-                  shadowColor: active ? colors.shadowColor : "transparent",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: active ? 0.08 : 0,
-                  shadowRadius: 6,
-                  elevation: active ? 2 : 0,
-                }}
-              >
-                <Text
+          <Box
+            className="flex-row mt-4 p-1 rounded-xl"
+            style={{ backgroundColor: colors.surfaceMuted }}
+          >
+            {TABS.map((tab) => {
+              const active = panel === tab.key;
+              return (
+                <Pressable
+                  key={tab.key}
+                  onPress={() => setPanel(tab.key)}
+                  className="flex-1 py-2 rounded-lg items-center active:opacity-70"
                   style={{
-                    fontFamily: active ? Fonts.semibold : Fonts.medium,
-                    color: active ? colors.primaryDark : colors.textSecondary,
+                    backgroundColor: active ? colors.surface : "transparent",
+                    shadowColor: active ? colors.shadowColor : "transparent",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: active ? 0.08 : 0,
+                    shadowRadius: 6,
+                    elevation: active ? 2 : 0,
                   }}
-                  className="text-[14px]"
                 >
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+                  <Text
+                    style={{
+                      fontFamily: active ? Fonts.semibold : Fonts.medium,
+                      color: active ? colors.primaryDark : colors.textSecondary,
+                    }}
+                    className="text-[14px]"
+                  >
+                    {tab.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </Box>
         </Box>
-      </Box>
 
-      {panel === "hours" ? <WorkingHoursPanel /> : <TimeOffPanel />}
+        {panel === "hours" ? <WorkingHoursPanel /> : <TimeOffPanel />}
+      </Animated.View>
     </SafeAreaView>
   );
 }

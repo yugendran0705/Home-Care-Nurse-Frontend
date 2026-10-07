@@ -68,6 +68,10 @@ export default function RootLayout() {
             name="booking-detail"
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="notifications"
+            options={{ headerShown: false }}
+          />
         </Stack>
         <StatusBar style="dark" />
       </ThemeProvider>
