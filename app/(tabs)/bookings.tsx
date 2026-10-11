@@ -13,12 +13,14 @@ import { Box } from "@/components/ui/box";
 import { Icon } from "@/components/ui/icon";
 import { Colors } from "@/constants/Colors";
 import { Fonts } from "@/constants/Typography";
+import { useUnreadNotificationCount } from "@/hooks/useNotifications";
 import { useFocusEffect, useRouter } from "expo-router";
-import { CalendarDays, ChevronRight, MapPin } from "lucide-react-native";
+import { Bell, CalendarDays, ChevronRight, MapPin } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -45,27 +47,41 @@ export default function BookingsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterKey>("upcoming");
+  const fadeAnim = useState(() => new Animated.Value(0))[0];
 
-  const fetchBookings = useCallback(async (silent = false) => {
-    try {
-      const response = await axiosInstance.get("bookings/me");
-      setBookings(response.data ?? []);
-    } catch (error: any) {
-      if (!silent) {
-        Alert.alert(
-          "Error",
-          apiErrorMessage(error, "Could not load your bookings."),
-        );
+  const fetchBookings = useCallback(
+    async (silent = false) => {
+      try {
+        const response = await axiosInstance.get("bookings/me");
+        setBookings(response.data ?? []);
+      } catch (error: any) {
+        if (!silent) {
+          Alert.alert(
+            "Error",
+            apiErrorMessage(error, "Could not load your bookings."),
+          );
+        }
+      } finally {
+        setLoading(false);
+        // Fade in on failure too, so the screen is never left at opacity 0.
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [fadeAnim],
+  );
+
+  const { count: unreadCount, refresh: refreshUnreadCount } =
+    useUnreadNotificationCount();
 
   useFocusEffect(
     useCallback(() => {
       fetchBookings(true);
-    }, [fetchBookings]),
+      refreshUnreadCount();
+    }, [fetchBookings, refreshUnreadCount]),
   );
 
   const onRefresh = useCallback(async () => {
@@ -211,12 +227,45 @@ export default function BookingsScreen() {
       edges={["top", "left", "right"]}
     >
       <Box className="px-5 pt-4">
-        <Text
-          className="text-2xl"
-          style={{ fontFamily: Fonts.bold, color: colors.text }}
-        >
-          Bookings
-        </Text>
+        <Box className="flex-row items-center justify-between">
+          <Text
+            className="text-2xl"
+            style={{ fontFamily: Fonts.bold, color: colors.text }}
+          >
+            Bookings
+          </Text>
+          <Pressable
+            onPress={() => router.push("/notifications")}
+            accessibilityLabel={
+              unreadCount > 0
+                ? `Notifications, ${unreadCount} unread`
+                : "Notifications"
+            }
+            className="active:opacity-70 p-1"
+          >
+            <Icon as={Bell} size="xl" style={{ color: colors.text }} />
+            {unreadCount > 0 ? (
+              <Box
+                className="absolute -top-0.5 -right-0.5 rounded-full items-center justify-center"
+                style={{
+                  backgroundColor: colors.error,
+                  minWidth: 18,
+                  height: 18,
+                  paddingHorizontal: 4,
+                  borderWidth: 2,
+                  borderColor: colors.background,
+                }}
+              >
+                <Text
+                  className="text-[10px]"
+                  style={{ fontFamily: Fonts.bold, color: "#FFFFFF" }}
+                >
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </Text>
+              </Box>
+            ) : null}
+          </Pressable>
+        </Box>
 
         <Box
           className="flex-row mt-4 p-1 rounded-xl"
@@ -258,47 +307,49 @@ export default function BookingsScreen() {
           <ActivityIndicator size="large" color={colors.primary} />
         </Box>
       ) : (
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ padding: 20, paddingBottom: 24 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[colors.primary]}
-              tintColor={colors.primary}
-            />
-          }
-        >
-          {visible.length === 0 ? (
-            <Box className="items-center mt-16">
-              <Icon
-                as={CalendarDays}
-                size="xl"
-                style={{ color: colors.iconMuted }}
+        <Animated.View className="flex-1" style={{ opacity: fadeAnim }}>
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ padding: 20, paddingBottom: 24 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[colors.primary]}
+                tintColor={colors.primary}
               />
-              <Text
-                style={{ fontFamily: Fonts.semibold, color: colors.text }}
-                className="text-[16px] mt-3"
-              >
-                Nothing here yet
-              </Text>
-              <Text
-                style={{
-                  fontFamily: Fonts.regular,
-                  color: colors.textSecondary,
-                }}
-                className="text-[14px] mt-1 text-center"
-              >
-                {filter === "upcoming"
-                  ? "New bookings will show up here once patients book you."
-                  : `You have no ${filter} bookings.`}
-              </Text>
-            </Box>
-          ) : (
-            visible.map(renderCard)
-          )}
-        </ScrollView>
+            }
+          >
+            {visible.length === 0 ? (
+              <Box className="items-center mt-16">
+                <Icon
+                  as={CalendarDays}
+                  size="xl"
+                  style={{ color: colors.iconMuted }}
+                />
+                <Text
+                  style={{ fontFamily: Fonts.semibold, color: colors.text }}
+                  className="text-[16px] mt-3"
+                >
+                  Nothing here yet
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: Fonts.regular,
+                    color: colors.textSecondary,
+                  }}
+                  className="text-[14px] mt-1 text-center"
+                >
+                  {filter === "upcoming"
+                    ? "New bookings will show up here once patients book you."
+                    : `You have no ${filter} bookings.`}
+                </Text>
+              </Box>
+            ) : (
+              visible.map(renderCard)
+            )}
+          </ScrollView>
+        </Animated.View>
       )}
     </SafeAreaView>
   );
